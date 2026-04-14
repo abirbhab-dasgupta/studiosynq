@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useTheme } from "@/components/landing/theme-provider";
 
 const NAV_LINKS = [
@@ -72,17 +73,14 @@ export default function Navbar() {
             href="/"
             className="flex shrink-0 items-center gap-2.5 no-underline"
           >
-            <span
-              className="flex items-center justify-center text-xs font-semibold text-white leading-none shrink-0"
-              style={{
-                width: 26,
-                height: 26,
-                background: "var(--amber)",
-                borderRadius: 7,
-              }}
-            >
-              S
-            </span>
+            <Image
+              src="/syncspace-logo.jpg"
+              alt="SyncSpace Logo"
+              width={26}
+              height={26}
+              className="shrink-0"
+              style={{ borderRadius: 7 }}
+            />
             <span
               className="text-[15px] font-medium tracking-tight"
               style={{ color: "var(--text)" }}

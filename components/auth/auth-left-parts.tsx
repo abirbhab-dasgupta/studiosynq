@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, ComponentType } from "react";
+import type { LucideProps } from "lucide-react";
 
 /* ─── Tag pill ─── */
 export function LeftTag({ label }: { label: string }) {
@@ -20,7 +21,7 @@ export function LeftTag({ label }: { label: string }) {
                 letterSpacing: "0.07em",
                 textTransform: "uppercase" as const,
                 color: "var(--text-2, #9E9589)",
-                marginBottom: 22,
+                marginBottom: 28,
             }}
         >
             <span
@@ -40,16 +41,20 @@ export function LeftTag({ label }: { label: string }) {
 }
 
 /* ─── Main headline ─── */
-export function LeftHeadline({ lines }: { lines: Array<{ text: string; italic?: boolean }> }) {
+export function LeftHeadline({
+    lines,
+}: {
+    lines: Array<{ text: string; italic?: boolean }>;
+}) {
     return (
         <h1
             style={{
                 fontFamily: "var(--font-serif, 'Instrument Serif', Georgia, serif)",
-                fontSize: 38,
-                lineHeight: 1.12,
-                letterSpacing: "-0.015em",
+                fontSize: 40,
+                lineHeight: 1.1,
+                letterSpacing: "-0.02em",
                 color: "var(--text, #EDE8DF)",
-                marginBottom: 16,
+                marginBottom: 18,
                 fontWeight: 400,
             }}
         >
@@ -74,11 +79,12 @@ export function LeftSub({ children }: { children: ReactNode }) {
     return (
         <p
             style={{
-                fontSize: 14,
-                lineHeight: 1.65,
+                fontSize: 15,
+                lineHeight: 1.7,
                 color: "var(--text-2, #9E9589)",
-                marginBottom: 36,
-                maxWidth: 360,
+                marginBottom: 48,
+                maxWidth: 340,
+                fontFamily: "var(--font-sans, 'DM Sans', sans-serif)",
             }}
         >
             {children}
@@ -86,77 +92,102 @@ export function LeftSub({ children }: { children: ReactNode }) {
     );
 }
 
-/* ─── Feature item ─── */
-interface Feature {
-    icon: string;
-    title: string;
-    desc: string;
+/* ─── Agent list — Lucide icons ─── */
+export interface Agent {
+    icon: ComponentType<LucideProps>;
+    name: string;
+    role: string;
 }
 
-export function FeatureList({ items }: { items: Feature[] }) {
+export function AgentList({ agents }: { agents: Agent[] }) {
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {items.map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
-                    {/* Icon box */}
+        <div
+            style={{
+                display: "flex",
+                flexDirection: "column",
+                borderTop: "0.5px solid var(--border, rgba(255,255,255,0.07))",
+            }}
+        >
+            {agents.map((agent, i) => {
+                const Icon = agent.icon;
+                return (
                     <div
+                        key={i}
                         style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: 8,
-                            border: "0.5px solid var(--border, rgba(255,255,255,0.07))",
-                            background: "var(--bg3, #1A1814)",
                             display: "flex",
                             alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 15,
-                            flexShrink: 0,
+                            gap: 12,
+                            padding: "12px 0",
+                            borderBottom: "0.5px solid var(--border, rgba(255,255,255,0.07))",
                         }}
                     >
-                        {item.icon}
-                    </div>
-                    <div>
+                        {/* Icon box */}
                         <div
                             style={{
+                                width: 30,
+                                height: 30,
+                                borderRadius: 8,
+                                border: "0.5px solid var(--border, rgba(255,255,255,0.07))",
+                                background: "var(--bg3, #1A1814)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                            }}
+                        >
+                            <Icon
+                                size={14}
+                                strokeWidth={1.5}
+                                color="var(--amber, #D97706)"
+                            />
+                        </div>
+
+                        {/* Name */}
+                        <span
+                            style={{
+                                flex: 1,
                                 fontSize: 13,
                                 fontWeight: 500,
                                 color: "var(--text, #EDE8DF)",
-                                lineHeight: 1.3,
-                                marginBottom: 2,
+                                fontFamily: "var(--font-sans, 'DM Sans', sans-serif)",
+                                letterSpacing: "-0.01em",
                             }}
                         >
-                            {item.title}
-                        </div>
-                        <div
+                            {agent.name}
+                        </span>
+
+                        {/* Role tag */}
+                        <span
                             style={{
-                                fontSize: 12,
-                                color: "var(--text-2, #9E9589)",
-                                lineHeight: 1.5,
+                                fontSize: 11,
+                                color: "var(--text-3, #524E46)",
+                                fontFamily: "var(--font-mono, 'DM Mono', monospace)",
+                                letterSpacing: "0.03em",
                             }}
                         >
-                            {item.desc}
-                        </div>
+                            {agent.role}
+                        </span>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }
 
-/* ─── Horizontal rule ─── */
+/* ─── Divider ─── */
 export function LeftDivider() {
     return (
         <div
             style={{
                 height: "0.5px",
                 background: "var(--border, rgba(255,255,255,0.07))",
-                margin: "30px 0",
+                margin: "32px 0",
             }}
         />
     );
 }
 
-/* ─── Social proof row ─── */
+/* ─── Social proof ─── */
 const AVATARS = [
     { initials: "AB", bg: "#3b2d1a", color: "#e8a84a" },
     { initials: "CR", bg: "#1e2e1e", color: "#5cb85c" },
@@ -167,14 +198,13 @@ const AVATARS = [
 export function SocialProof({ label }: { label: ReactNode }) {
     return (
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {/* Stacked avatars */}
             <div style={{ display: "flex", alignItems: "center" }}>
                 {AVATARS.map((av, i) => (
                     <div
                         key={i}
                         style={{
-                            width: 28,
-                            height: 28,
+                            width: 26,
+                            height: 26,
                             borderRadius: "50%",
                             border: "1.5px solid var(--bg2, #131210)",
                             background: av.bg,
@@ -184,7 +214,7 @@ export function SocialProof({ label }: { label: ReactNode }) {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            marginLeft: i === 0 ? 0 : -9,
+                            marginLeft: i === 0 ? 0 : -8,
                             fontFamily: "var(--font-mono, 'DM Mono', monospace)",
                             flexShrink: 0,
                             letterSpacing: "0.02em",
@@ -199,6 +229,7 @@ export function SocialProof({ label }: { label: ReactNode }) {
                     fontSize: 12,
                     color: "var(--text-2, #9E9589)",
                     lineHeight: 1.5,
+                    fontFamily: "var(--font-sans, 'DM Sans', sans-serif)",
                 }}
             >
                 {label}

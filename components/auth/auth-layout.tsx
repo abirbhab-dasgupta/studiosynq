@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ReactNode, useEffect, useState } from "react";
 
 interface AuthLayoutProps {
@@ -39,9 +40,6 @@ export function AuthLayout({ children, leftContent, activePage }: AuthLayoutProp
                 fontFamily: "var(--font-sans, 'DM Sans', sans-serif)",
             }}
         >
-            {/* ════════════════════════════
-          NAVBAR — matches landing page
-          ════════════════════════════ */}
             <nav
                 className="nav-bar"
                 style={{
@@ -71,24 +69,14 @@ export function AuthLayout({ children, leftContent, activePage }: AuthLayoutProp
                         flexShrink: 0,
                     }}
                 >
-                    <div
-                        style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 7,
-                            background: "var(--amber, #D97706)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontFamily: "var(--font-mono, 'DM Mono', monospace)",
-                            fontSize: 13,
-                            fontWeight: 500,
-                            color: "#fff",
-                            flexShrink: 0,
-                        }}
-                    >
-                        S
-                    </div>
+                    <Image
+                        src="/syncspace-logo.jpg"
+                        alt="SyncSpace Logo"
+                        width={26}
+                        height={26}
+                        className="shrink-0"
+                        style={{ borderRadius: 7 }}
+                    />
                     <span
                         style={{
                             fontSize: 15,

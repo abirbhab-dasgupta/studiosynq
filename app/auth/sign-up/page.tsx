@@ -3,15 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Bot, Lightbulb, Search, Palette, FileText } from "lucide-react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import {
     LeftTag,
     LeftHeadline,
     LeftSub,
-    FeatureList,
-    LeftDivider,
+    AgentList,
     SocialProof,
 } from "@/components/auth/auth-left-parts";
+import type { Agent } from "@/components/auth/auth-left-parts";
 import {
     OAuthRow,
     OrDivider,
@@ -21,54 +22,41 @@ import {
 } from "@/components/auth/auth-form-parts";
 import { authClient } from "@/lib/auth-client";
 
-const FEATURES = [
-    {
-        icon: "🤖",
-        title: "CodeBuddy + ClarityAgent",
-        desc: "Debug, explain, and break down any problem instantly",
-    },
-    {
-        icon: "🔍",
-        title: "ResearchBot with live search",
-        desc: "Tavily-powered web search returning cited, structured reports",
-    },
-    {
-        icon: "📋",
-        title: "Kanban + Focus sessions",
-        desc: "Tasks, Pomodoro timers, and co-working rooms in one place",
-    },
+const AGENTS: Agent[] = [
+    { icon: Bot, name: "CodeBuddy", role: "code · debug · review" },
+    { icon: Lightbulb, name: "ClarityAgent", role: "explain · simplify" },
+    { icon: Search, name: "ResearchBot", role: "live web search" },
+    { icon: Palette, name: "DesignExpert", role: "ui · feedback · specs" },
+    { icon: FileText, name: "DocWriter", role: "readme · jsdoc · guides" },
 ];
 
 function SignUpLeft() {
     return (
         <>
             <LeftTag label="Now in Open Beta" />
-
             <LeftHeadline
                 lines={[
                     { text: "One room where AI handles " },
                     { text: "the tedious parts.", italic: true },
                 ]}
             />
-
             <LeftSub>
-                SyncSpace gives your whole team — developers, designers, writers — five
-                AI agents that live right inside your workspace.
+                Five specialized agents live inside every room — always available,
+                never in the way.
             </LeftSub>
-
-            <FeatureList items={FEATURES} />
-            <LeftDivider />
-
-            <SocialProof
-                label={
-                    <>
-                        <strong style={{ color: "var(--text, #EDE8DF)", fontWeight: 500 }}>
-                            Free during beta.
-                        </strong>{" "}
-                        No credit card required.
-                    </>
-                }
-            />
+            <AgentList agents={AGENTS} />
+            <div style={{ marginTop: 32 }}>
+                <SocialProof
+                    label={
+                        <>
+                            <strong style={{ color: "var(--text, #EDE8DF)", fontWeight: 500 }}>
+                                Free during beta.
+                            </strong>{" "}
+                            No credit card required.
+                        </>
+                    }
+                />
+            </div>
         </>
     );
 }
@@ -95,18 +83,17 @@ export default function SignUpPage() {
                 email,
                 password,
             });
-
             if (authError) {
                 setError(authError.message ?? "Something went wrong. Please try again.");
-                setLoading(false);
                 return;
             }
-
             if (data) {
+                router.refresh();
                 router.push("/dashboard");
             }
-        } catch (err) {
+        } catch {
             setError("An unexpected error occurred. Please try again.");
+        } finally {
             setLoading(false);
         }
     };
@@ -115,7 +102,6 @@ export default function SignUpPage() {
         <AuthLayout leftContent={<SignUpLeft />} activePage="sign-up">
             <div style={{ width: "100%", maxWidth: 384 }}>
 
-                {/* Eyebrow */}
                 <p style={{
                     fontFamily: "var(--font-mono, 'DM Mono', monospace)",
                     fontSize: 10,
@@ -128,7 +114,6 @@ export default function SignUpPage() {
                     Create account
                 </p>
 
-                {/* Headline */}
                 <h1 style={{
                     fontFamily: "var(--font-serif, 'Instrument Serif', Georgia, serif)",
                     fontSize: 30,
@@ -141,7 +126,6 @@ export default function SignUpPage() {
                     Start building together
                 </h1>
 
-                {/* Sub */}
                 <p style={{ fontSize: 13, color: "var(--text-2, #9E9589)", lineHeight: 1.55, marginBottom: 28 }}>
                     Already have an account?{" "}
                     <Link href="/auth/sign-in" style={{ color: "var(--amber, #D97706)", fontWeight: 500, textDecoration: "none" }}>
@@ -149,7 +133,6 @@ export default function SignUpPage() {
                     </Link>
                 </p>
 
-                {/* Error message */}
                 {error && (
                     <div style={{
                         padding: "10px 14px",
@@ -169,13 +152,12 @@ export default function SignUpPage() {
                     <OAuthRow />
                     <OrDivider />
 
-                    {/* Name row */}
                     <div style={{ display: "flex", gap: 10 }}>
                         <div style={{ flex: 1 }}>
-                            <Field label="First name" type="text" name="firstName" autoComplete="given-name" placeholder="First Name" required />
+                            <Field label="First name" type="text" name="firstName" autoComplete="given-name" placeholder="First name" required />
                         </div>
                         <div style={{ flex: 1 }}>
-                            <Field label="Last name" type="text" name="lastName" autoComplete="family-name" placeholder="Last Name" required />
+                            <Field label="Last name" type="text" name="lastName" autoComplete="family-name" placeholder="Last name" required />
                         </div>
                     </div>
 

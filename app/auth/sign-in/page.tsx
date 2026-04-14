@@ -3,15 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Bot, Lightbulb, Search, Palette, FileText } from "lucide-react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import {
     LeftTag,
     LeftHeadline,
     LeftSub,
-    FeatureList,
-    LeftDivider,
+    AgentList,
     SocialProof,
 } from "@/components/auth/auth-left-parts";
+import type { Agent } from "@/components/auth/auth-left-parts";
 import {
     OAuthRow,
     OrDivider,
@@ -21,56 +22,40 @@ import {
 } from "@/components/auth/auth-form-parts";
 import { authClient } from "@/lib/auth-client";
 
-const FEATURES = [
-    {
-        icon: "⚡",
-        title: "Five AI agents, always on",
-        desc: "CodeBuddy, ResearchBot, DesignExpert & more live in your room",
-    },
-    {
-        icon: "🔒",
-        title: "Secure with BetterAuth",
-        desc: "OAuth + session-based auth, zero friction to get back in",
-    },
-    {
-        icon: "🏠",
-        title: "Your rooms, your rules",
-        desc: "Live collaboration, Kanban boards, and focus sessions",
-    },
+const AGENTS: Agent[] = [
+    { icon: Bot, name: "CodeBuddy", role: "code · debug · review" },
+    { icon: Lightbulb, name: "ClarityAgent", role: "explain · simplify" },
+    { icon: Search, name: "ResearchBot", role: "live web search" },
+    { icon: Palette, name: "DesignExpert", role: "ui · feedback · specs" },
+    { icon: FileText, name: "DocWriter", role: "readme · jsdoc · guides" },
 ];
-
-
 
 function SignInLeft() {
     return (
         <>
             <LeftTag label="Back to your workspace" />
-
             <LeftHeadline
                 lines={[
                     { text: "Welcome back to " },
                     { text: "SyncSpace.", italic: true },
                 ]}
             />
-
             <LeftSub>
-                Your team&apos;s rooms, tasks and AI agents are waiting. Pick up right
-                where you left off.
+                Your rooms, tasks, and AI agents are exactly where you left them.
             </LeftSub>
-
-            <FeatureList items={FEATURES} />
-            <LeftDivider />
-
-            <SocialProof
-                label={
-                    <>
-                        <strong style={{ color: "var(--text, #EDE8DF)", fontWeight: 500 }}>
-                            200+ teams
-                        </strong>{" "}
-                        collaborating in SyncSpace today
-                    </>
-                }
-            />
+            <AgentList agents={AGENTS} />
+            <div style={{ marginTop: 32 }}>
+                <SocialProof
+                    label={
+                        <>
+                            <strong style={{ color: "var(--text, #EDE8DF)", fontWeight: 500 }}>
+                                200+ teams
+                            </strong>{" "}
+                            collaborating in SyncSpace today
+                        </>
+                    }
+                />
+            </div>
         </>
     );
 }
@@ -90,22 +75,18 @@ export default function SignInPage() {
         const password = formData.get("password") as string;
 
         try {
-            const { data, error: authError } = await authClient.signIn.email({
-                email,
-                password,
-            });
-
+            const { data, error: authError } = await authClient.signIn.email({ email, password });
             if (authError) {
                 setError(authError.message ?? "Invalid email or password.");
-                setLoading(false);
                 return;
             }
-
             if (data) {
+                router.refresh();
                 router.push("/dashboard");
             }
-        } catch (err) {
+        } catch {
             setError("An unexpected error occurred. Please try again.");
+        } finally {
             setLoading(false);
         }
     };
@@ -114,7 +95,6 @@ export default function SignInPage() {
         <AuthLayout leftContent={<SignInLeft />} activePage="sign-in">
             <div style={{ width: "100%", maxWidth: 384 }}>
 
-                {/* Eyebrow */}
                 <p style={{
                     fontFamily: "var(--font-mono, 'DM Mono', monospace)",
                     fontSize: 10,
@@ -127,7 +107,6 @@ export default function SignInPage() {
                     Sign in
                 </p>
 
-                {/* Headline */}
                 <h1 style={{
                     fontFamily: "var(--font-serif, 'Instrument Serif', Georgia, serif)",
                     fontSize: 30,
@@ -140,7 +119,6 @@ export default function SignInPage() {
                     Good to see you again
                 </h1>
 
-                {/* Sub */}
                 <p style={{ fontSize: 13, color: "var(--text-2, #9E9589)", lineHeight: 1.55, marginBottom: 28 }}>
                     No account yet?{" "}
                     <Link href="/auth/sign-up" style={{ color: "var(--amber, #D97706)", fontWeight: 500, textDecoration: "none" }}>
@@ -148,7 +126,6 @@ export default function SignInPage() {
                     </Link>
                 </p>
 
-                {/* Error message */}
                 {error && (
                     <div style={{
                         padding: "10px 14px",
@@ -176,7 +153,6 @@ export default function SignInPage() {
                         placeholder="you@example.com"
                         required
                     />
-
                     <Field
                         label="Password"
                         type="password"
@@ -185,7 +161,7 @@ export default function SignInPage() {
                         placeholder="••••••••"
                         required
                         rightLabel={
-                            <Link href="/forgot-password" style={{ fontSize: 12, color: "var(--amber, #D97706)", fontWeight: 500, textDecoration: "none" }}>
+                            <Link href="/auth/forgot-password" style={{ fontSize: 12, color: "var(--amber, #D97706)", fontWeight: 500, textDecoration: "none" }}>
                                 Forgot password?
                             </Link>
                         }

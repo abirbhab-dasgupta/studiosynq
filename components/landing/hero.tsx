@@ -6,7 +6,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden top-16"
       style={{ padding: "80px 20px 64px" }}
     >
       {/* Dot grid */}
@@ -103,7 +103,7 @@ export default function Hero() {
       {/* CTAs */}
       <div className="anim-3 relative flex flex-wrap items-center justify-center gap-3" style={{ marginTop: 38 }}>
         <a
-          href="#"
+          href="/dashboard"
           className="inline-flex items-center gap-2 font-medium transition-all duration-200 no-underline"
           style={{
             padding: "11px 26px",
