@@ -96,7 +96,7 @@ export default function Hero() {
           color: "var(--text-2)",
         }}
       >
-        SyncSpace gives your whole team — developers, designers, writers — five
+        Studiosynq gives your whole team — developers, designers, writers — five
         AI agents that live right inside your workspace.
       </p>
 

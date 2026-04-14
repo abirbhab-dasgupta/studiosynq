@@ -42,7 +42,7 @@ export default function AppPreview() {
             whiteSpace: "nowrap",
           }}
         >
-          syncspace.app / room / design-sprint
+          studiosynq.app / room / design-sprint
         </div>
       </div>
 
@@ -150,7 +150,7 @@ function SidebarContent() {
       {/* Logo */}
       <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "0 6px 10px", borderBottom: "1px solid var(--border)", marginBottom: 6 }}>
         <div style={{ width: 18, height: 18, borderRadius: 5, background: "var(--amber)", flexShrink: 0 }} />
-        <span style={{ fontSize: 11, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.015em" }}>SyncSpace</span>
+        <span style={{ fontSize: 11, fontWeight: 500, color: "var(--text)", letterSpacing: "-0.015em" }}>Studiosynq</span>
       </div>
 
       <SideSection label="Workspace" />

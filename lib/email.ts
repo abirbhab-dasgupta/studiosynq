@@ -10,7 +10,7 @@ interface SendEmailOptions {
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
     const { error } = await resend.emails.send({
-        from: process.env.EMAIL_FROM || "SyncSpace <onboarding@resend.dev>",
+        from: process.env.EMAIL_FROM || "Studiosynq <onboarding@resend.dev>",
         to,
         subject,
         html,

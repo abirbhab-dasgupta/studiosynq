@@ -3,7 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/landing/theme-provider";
 
 export const metadata: Metadata = {
-  title: "SyncSpace — AI-Powered Co-Working",
+  title: "Studiosynq — AI-Powered Co-Working",
   description:
     "One room where AI handles the tedious parts. Five specialized AI agents for developers, designers, and writers — built right into your workspace.",
 };

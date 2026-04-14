@@ -70,8 +70,8 @@ export function AuthLayout({ children, leftContent, activePage }: AuthLayoutProp
                     }}
                 >
                     <Image
-                        src="/syncspace-logo.jpg"
-                        alt="SyncSpace Logo"
+                        src="/studiosynq-logo.jpg"
+                        alt="Studiosynq Logo"
                         width={26}
                         height={26}
                         className="shrink-0"
@@ -86,7 +86,7 @@ export function AuthLayout({ children, leftContent, activePage }: AuthLayoutProp
                             fontFamily: "var(--font-sans, 'DM Sans', sans-serif)",
                         }}
                     >
-                        SyncSpace
+                        Studiosynq
                     </span>
                 </Link>
 

@@ -3,10 +3,10 @@
 import Link from "next/link";
 
 const LINKS = [
-  { label: "Agents",  href: "#agents" },
+  { label: "Agents", href: "#agents" },
   { label: "Pricing", href: "#" },
-  { label: "Docs",    href: "#" },
-  { label: "GitHub",  href: "https://github.com/abirbhab-dasgupta/syncspace" },
+  { label: "Docs", href: "#" },
+  { label: "GitHub", href: "https://github.com/abirbhab-dasgupta/studiosynq" },
   { label: "Privacy", href: "#" },
 ];
 
@@ -40,7 +40,7 @@ export default function Footer() {
           className="text-sm font-medium tracking-tight"
           style={{ color: "var(--text)" }}
         >
-          SyncSpace
+          Studiosynq
         </span>
       </Link>
 
@@ -62,7 +62,7 @@ export default function Footer() {
         className="text-[11px]"
         style={{ color: "var(--text-3)" }}
       >
-        © 2025 SyncSpace · Built by Abirbhab
+        © 2025 Studiosynq · Built by Abirbhab
       </span>
     </footer>
   );

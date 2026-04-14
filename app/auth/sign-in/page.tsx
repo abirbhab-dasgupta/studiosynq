@@ -37,7 +37,7 @@ function SignInLeft() {
             <LeftHeadline
                 lines={[
                     { text: "Welcome back to " },
-                    { text: "SyncSpace.", italic: true },
+                    { text: "Studiosynq.", italic: true },
                 ]}
             />
             <LeftSub>
@@ -51,7 +51,7 @@ function SignInLeft() {
                             <strong style={{ color: "var(--text, #EDE8DF)", fontWeight: 500 }}>
                                 200+ teams
                             </strong>{" "}
-                            collaborating in SyncSpace today
+                            collaborating in Studiosynq today
                         </>
                     }
                 />
@@ -167,7 +167,7 @@ export default function SignInPage() {
                         }
                     />
 
-                    <SubmitButton loading={loading}>Sign in to SyncSpace →</SubmitButton>
+                    <SubmitButton loading={loading}>Sign in to Studiosynq →</SubmitButton>
                     <Terms action="signing in," />
                 </form>
 

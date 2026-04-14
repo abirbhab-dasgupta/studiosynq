@@ -17,10 +17,10 @@ export const auth = betterAuth({
         sendResetPassword: async ({ user, url }, request) => {
             void sendEmail({
                 to: user.email,
-                subject: "Reset your SyncSpace password",
+                subject: "Reset your Studiosynq password",
                 html: `
           <p>Hi ${user.name},</p>
-          <p>Someone requested a password reset for your SyncSpace account.</p>
+          <p>Someone requested a password reset for your Studiosynq account.</p>
           <p><a href="${url}" style="color:#D97706">Reset your password →</a></p>
           <p>If you didn't request this, you can safely ignore this email.</p>
           <p>This link expires in 1 hour.</p>

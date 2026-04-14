@@ -74,8 +74,8 @@ export default function Navbar() {
             className="flex shrink-0 items-center gap-2.5 no-underline"
           >
             <Image
-              src="/syncspace-logo.jpg"
-              alt="SyncSpace Logo"
+              src="/studiosynq-logo.jpg"
+              alt="Studiosynq Logo"
               width={26}
               height={26}
               className="shrink-0"
@@ -85,7 +85,7 @@ export default function Navbar() {
               className="text-[15px] font-medium tracking-tight"
               style={{ color: "var(--text)" }}
             >
-              SyncSpace
+              Studiosynq
             </span>
           </Link>
 

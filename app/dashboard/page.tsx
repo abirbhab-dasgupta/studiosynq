@@ -188,7 +188,7 @@ export default function Dashboard() {
                         S
                     </div>
                     <span style={{ fontSize: 15, fontWeight: 500, letterSpacing: "-0.02em", color: "var(--text, #EDE8DF)", fontFamily: fonts.sans }}>
-                        SyncSpace
+                        Studiosynq
                     </span>
                 </Link>
 
