@@ -160,11 +160,6 @@ export default function SignInPage() {
                         autoComplete="current-password"
                         placeholder="••••••••"
                         required
-                        rightLabel={
-                            <Link href="/auth/forgot-password" style={{ fontSize: 12, color: "var(--amber, #D97706)", fontWeight: 500, textDecoration: "none" }}>
-                                Forgot password?
-                            </Link>
-                        }
                     />
 
                     <SubmitButton loading={loading}>Sign in to Studiosynq →</SubmitButton>

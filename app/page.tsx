@@ -23,7 +23,6 @@ export default function Home() {
     }
   }, [isPending, session, router]);
 
-  // While auth state is resolving, show nothing to prevent landing-page flicker
   if (isPending) {
     return (
       <div
@@ -49,12 +48,9 @@ export default function Home() {
     );
   }
 
-  // Signed-in user — redirect is in-flight, render nothing to avoid flash
   if (session) {
     return null;
   }
-
-  // Signed-out user — render the landing page as-is
   return (
     <main>
       <Navbar />

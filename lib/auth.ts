@@ -13,24 +13,6 @@ export const auth = betterAuth({
     }),
     emailAndPassword: {
         enabled: true,
-
-        sendResetPassword: async ({ user, url }, request) => {
-            void sendEmail({
-                to: user.email,
-                subject: "Reset your Studiosynq password",
-                html: `
-          <p>Hi ${user.name},</p>
-          <p>Someone requested a password reset for your Studiosynq account.</p>
-          <p><a href="${url}" style="color:#D97706">Reset your password →</a></p>
-          <p>If you didn't request this, you can safely ignore this email.</p>
-          <p>This link expires in 1 hour.</p>
-        `,
-            });
-        },
-
-        onPasswordReset: async ({ user }) => {
-            console.log(`Password reset completed for ${user.email}`);
-        },
     },
     socialProviders: {
         google: {
