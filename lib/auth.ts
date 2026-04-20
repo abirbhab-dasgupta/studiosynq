@@ -4,7 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { username } from "better-auth/plugins";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
-import { sendEmail } from "./email";
+
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {

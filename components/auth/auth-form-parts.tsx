@@ -1,8 +1,9 @@
 "use client";
 
-import { InputHTMLAttributes, ReactNode, forwardRef } from "react";
-import { authClient } from "@/lib/auth-client";
+import { InputHTMLAttributes, ReactNode, forwardRef, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
+/* ─── Google SVG ─── */
 function GoogleIcon() {
     return (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -14,6 +15,7 @@ function GoogleIcon() {
     );
 }
 
+/* ─── GitHub SVG ─── */
 function GitHubIcon() {
     return (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -40,6 +42,7 @@ const oauthBtnBase: React.CSSProperties = {
     transition: "background 0.15s, border-color 0.15s",
 };
 
+/* ─── OAuth row ─── */
 export function OAuthRow() {
     const enter = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.currentTarget.style.background = "var(--bg3, #1A1814)";
@@ -49,38 +52,29 @@ export function OAuthRow() {
         e.currentTarget.style.background = "var(--bg2, #131210)";
         e.currentTarget.style.borderColor = "var(--border-m, rgba(255,255,255,0.11))";
     };
-
-    const handleGoogle = () => {
-        authClient.signIn.social({
-            provider: "google",
-            callbackURL: "/dashboard",
-        });
-    };
-
-    const handleGitHub = () => {
-        authClient.signIn.social({
-            provider: "github",
-            callbackURL: "/dashboard",
-        });
-    };
-
     return (
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-            <button type="button" style={oauthBtnBase} onMouseEnter={enter} onMouseLeave={leave} onClick={handleGoogle}>
+            <button type="button" style={oauthBtnBase} onMouseEnter={enter} onMouseLeave={leave}>
                 <GoogleIcon /> Google
             </button>
-            <button type="button" style={oauthBtnBase} onMouseEnter={enter} onMouseLeave={leave} onClick={handleGitHub}>
+            <button type="button" style={oauthBtnBase} onMouseEnter={enter} onMouseLeave={leave}>
                 <GitHubIcon /> GitHub
             </button>
         </div>
     );
 }
 
+/* ─── OR divider ─── */
 export function OrDivider() {
     return (
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
             <div style={{ flex: 1, height: "0.5px", background: "var(--border, rgba(255,255,255,0.07))" }} />
-            <span style={{ fontSize: 11, color: "var(--text-3, #524E46)", fontFamily: "var(--font-mono, 'DM Mono', monospace)", letterSpacing: "0.04em" }}>
+            <span style={{
+                fontSize: 11,
+                color: "var(--text-3, #524E46)",
+                fontFamily: "var(--font-mono, 'DM Mono', monospace)",
+                letterSpacing: "0.04em",
+            }}>
                 or
             </span>
             <div style={{ flex: 1, height: "0.5px", background: "var(--border, rgba(255,255,255,0.07))" }} />
@@ -88,54 +82,121 @@ export function OrDivider() {
     );
 }
 
+/* ─── Field ─── */
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
     label: string;
     rightLabel?: ReactNode;
 }
 
 export const Field = forwardRef<HTMLInputElement, FieldProps>(
-    ({ label, rightLabel, onFocus, onBlur, style, ...rest }, ref) => (
-        <div style={{ marginBottom: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                <label style={{ fontSize: 12, fontWeight: 500, color: "var(--text-2, #9E9589)", letterSpacing: "0.01em", fontFamily: "var(--font-sans, 'DM Sans', sans-serif)" }}>
-                    {label}
-                </label>
-                {rightLabel}
+    ({ label, rightLabel, type, onFocus, onBlur, style, ...rest }, ref) => {
+        // Password visibility state — only active when type="password"
+        const isPassword = type === "password";
+        const [visible, setVisible] = useState(false);
+        const inputType = isPassword ? (visible ? "text" : "password") : type;
+
+        const ToggleIcon = visible ? EyeOff : Eye;
+
+        return (
+            <div style={{ marginBottom: 14 }}>
+                {/* Label row */}
+                <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 6,
+                }}>
+                    <label style={{
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color: "var(--text-2, #9E9589)",
+                        letterSpacing: "0.01em",
+                        fontFamily: "var(--font-sans, 'DM Sans', sans-serif)",
+                    }}>
+                        {label}
+                    </label>
+                    {rightLabel}
+                </div>
+
+                {/* Input wrapper */}
+                <div style={{ position: "relative" }}>
+                    <input
+                        ref={ref}
+                        type={inputType}
+                        {...rest}
+                        style={{
+                            width: "100%",
+                            padding: isPassword ? "10px 40px 10px 13px" : "10px 13px",
+                            borderRadius: 10,
+                            border: "0.5px solid var(--border-m, rgba(255,255,255,0.11))",
+                            background: "var(--bg2, #131210)",
+                            color: "var(--text, #EDE8DF)",
+                            fontSize: 14,
+                            fontFamily: "var(--font-sans, 'DM Sans', sans-serif)",
+                            outline: "none",
+                            transition: "border-color 0.15s, box-shadow 0.15s",
+                            WebkitAppearance: "none",
+                            boxSizing: "border-box",
+                            ...style,
+                        }}
+                        onFocus={(e) => {
+                            e.currentTarget.style.borderColor = "var(--amber, #D97706)";
+                            e.currentTarget.style.boxShadow = "0 0 0 3px var(--amber-faint, rgba(217,119,6,0.07))";
+                            onFocus?.(e);
+                        }}
+                        onBlur={(e) => {
+                            e.currentTarget.style.borderColor = "var(--border-m, rgba(255,255,255,0.11))";
+                            e.currentTarget.style.boxShadow = "none";
+                            onBlur?.(e);
+                        }}
+                    />
+
+                    {/* Eye toggle — only rendered for password fields */}
+                    {isPassword && (
+                        <button
+                            type="button"
+                            aria-label={visible ? "Hide password" : "Show password"}
+                            onClick={() => setVisible((v) => !v)}
+                            style={{
+                                position: "absolute",
+                                right: 12,
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                padding: 2,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "var(--text-3, #524E46)",
+                                transition: "color 0.15s",
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.color = "var(--text-2, #9E9589)";
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.color = "var(--text-3, #524E46)";
+                            }}
+                        >
+                            <ToggleIcon size={15} strokeWidth={1.75} />
+                        </button>
+                    )}
+                </div>
             </div>
-            <input
-                ref={ref}
-                {...rest}
-                style={{
-                    width: "100%",
-                    padding: "10px 13px",
-                    borderRadius: 10,
-                    border: "0.5px solid var(--border-m, rgba(255,255,255,0.11))",
-                    background: "var(--bg2, #131210)",
-                    color: "var(--text, #EDE8DF)",
-                    fontSize: 14,
-                    fontFamily: "var(--font-sans, 'DM Sans', sans-serif)",
-                    outline: "none",
-                    transition: "border-color 0.15s, box-shadow 0.15s",
-                    WebkitAppearance: "none",
-                    ...style,
-                }}
-                onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "var(--amber, #D97706)";
-                    e.currentTarget.style.boxShadow = "0 0 0 3px var(--amber-faint, rgba(217,119,6,0.07))";
-                    onFocus?.(e);
-                }}
-                onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "var(--border-m, rgba(255,255,255,0.11))";
-                    e.currentTarget.style.boxShadow = "none";
-                    onBlur?.(e);
-                }}
-            />
-        </div>
-    )
+        );
+    }
 );
 Field.displayName = "Field";
 
-export function SubmitButton({ children, loading = false }: { children: ReactNode; loading?: boolean }) {
+/* ─── Submit button ─── */
+export function SubmitButton({
+    children,
+    loading = false,
+}: {
+    children: ReactNode;
+    loading?: boolean;
+}) {
     return (
         <>
             <style>{`@keyframes ss-spin { to { transform: rotate(360deg); } }`}</style>
@@ -169,7 +230,14 @@ export function SubmitButton({ children, loading = false }: { children: ReactNod
             >
                 {loading ? (
                     <>
-                        <span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "ss-spin 0.65s linear infinite", display: "inline-block" }} />
+                        <span style={{
+                            width: 14, height: 14,
+                            border: "2px solid rgba(255,255,255,0.3)",
+                            borderTopColor: "#fff",
+                            borderRadius: "50%",
+                            animation: "ss-spin 0.65s linear infinite",
+                            display: "inline-block",
+                        }} />
                         Processing…
                     </>
                 ) : children}
@@ -178,12 +246,25 @@ export function SubmitButton({ children, loading = false }: { children: ReactNod
     );
 }
 
+/* ─── Terms ─── */
 export function Terms({ action }: { action: string }) {
-    const ls: React.CSSProperties = { color: "var(--text-2, #9E9589)", textDecoration: "none", transition: "color 0.15s" };
-    const enter = (e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = "var(--amber, #D97706)");
-    const leave = (e: React.MouseEvent<HTMLAnchorElement>) => (e.currentTarget.style.color = "var(--text-2, #9E9589)");
+    const ls: React.CSSProperties = {
+        color: "var(--text-2, #9E9589)",
+        textDecoration: "none",
+        transition: "color 0.15s",
+    };
+    const enter = (e: React.MouseEvent<HTMLAnchorElement>) =>
+        (e.currentTarget.style.color = "var(--amber, #D97706)");
+    const leave = (e: React.MouseEvent<HTMLAnchorElement>) =>
+        (e.currentTarget.style.color = "var(--text-2, #9E9589)");
     return (
-        <p style={{ fontSize: 11, color: "var(--text-3, #524E46)", textAlign: "center", marginTop: 14, lineHeight: 1.55 }}>
+        <p style={{
+            fontSize: 11,
+            color: "var(--text-3, #524E46)",
+            textAlign: "center",
+            marginTop: 14,
+            lineHeight: 1.55,
+        }}>
             By {action} you agree to our{" "}
             <a href="#" style={ls} onMouseEnter={enter} onMouseLeave={leave}>Terms of Service</a>{" "}
             and{" "}
