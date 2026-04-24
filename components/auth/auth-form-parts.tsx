@@ -2,6 +2,7 @@
 
 import { InputHTMLAttributes, ReactNode, forwardRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 /* ─── Google SVG ─── */
 function GoogleIcon() {
@@ -54,10 +55,10 @@ export function OAuthRow() {
     };
     return (
         <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-            <button type="button" style={oauthBtnBase} onMouseEnter={enter} onMouseLeave={leave}>
+            <button onClick={() => authClient.signIn.social({ provider: "google" })} type="button" style={oauthBtnBase} onMouseEnter={enter} onMouseLeave={leave}>
                 <GoogleIcon /> Google
             </button>
-            <button type="button" style={oauthBtnBase} onMouseEnter={enter} onMouseLeave={leave}>
+            <button onClick={() => authClient.signIn.social({ provider: "github" })} type="button" style={oauthBtnBase} onMouseEnter={enter} onMouseLeave={leave}>
                 <GitHubIcon /> GitHub
             </button>
         </div>
