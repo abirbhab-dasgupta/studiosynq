@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/landing/theme-provider";
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Studiosynq — AI-Powered Co-Working",
@@ -28,7 +29,9 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        <ThemeProvider>{children}</ThemeProvider>
+        <Providers>
+          <ThemeProvider>{children}</ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
