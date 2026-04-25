@@ -149,7 +149,13 @@ export function Sidebar({ T, activeNav, setActiveNav, user }: Props) {
                     {navItems.map(item => {
                         const active = activeNav === item.label;
                         return (
-                            <button key={item.label} onClick={() => setActiveNav(item.label)}
+                            <button key={item.label} onClick={() => {
+                                if (item.label === "Profile") {
+                                    router.push("/profile");
+                                } else {
+                                    setActiveNav(item.label);
+                                }
+                            }}
                                 style={s({
                                     display: "flex", alignItems: "center", gap: 8,
                                     padding: "6px 8px", borderRadius: 8, width: "100%", textAlign: "left",
@@ -164,7 +170,6 @@ export function Sidebar({ T, activeNav, setActiveNav, user }: Props) {
                             </button>
                         );
                     })}
-
                     <div style={s({
                         fontSize: 9, fontWeight: 600, textTransform: "uppercase",
                         letterSpacing: ".1em", color: T.text3, padding: "0 8px 8px", marginTop: 14,

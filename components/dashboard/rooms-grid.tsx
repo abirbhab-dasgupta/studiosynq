@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Ico, P } from "./icons";
 import { Theme } from "./tokens";
+import { useRouter } from "next/navigation";
 
 type Room = {
     id: string;
@@ -20,6 +21,7 @@ export function RoomsGrid({ T, isMobile }: Props) {
     const queryClient = useQueryClient();
     const [newRoomName, setNewRoomName] = useState("");
     const [creating, setCreating] = useState(false);
+    const router = useRouter();
 
     const { data: rooms = [] } = useQuery<Room[]>({
         queryKey: ["rooms"],
@@ -80,12 +82,16 @@ export function RoomsGrid({ T, isMobile }: Props) {
                             }} />
                         </div>
                         <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                            <button style={s({
-                                fontSize: 11, fontWeight: 500,
-                                background: T.surface, border: `1px solid ${T.border}`,
-                                borderRadius: 6, padding: "4px 12px", color: T.text2,
-                                cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
-                            })}>Open</button>
+                            <button
+                                onClick={() => router.push(`/rooms/${r.id}`)}
+                                style={s({
+                                    fontSize: 11, fontWeight: 500,
+                                    background: T.surface, border: `1px solid ${T.border}`,
+                                    borderRadius: 6, padding: "4px 12px", color: T.text2,
+                                    cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+                                })}>
+                                Open
+                            </button>
                         </div>
                     </div>
                 ))}

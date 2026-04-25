@@ -237,3 +237,73 @@ html.light .mobile-drawer {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--bg4);
 }
+
+
+
+.profile-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
+}
+
+.profile-content {
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 40px 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+@media (max-width: 640px) {
+  .profile-content {
+    padding: 24px 16px 60px;
+  }
+
+  .profile-card {
+    padding: 18px;
+  }
+
+  .profile-header {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 400px) {
+  .profile-header {
+    padding: 0 12px;
+    gap: 8px;
+  }
+}
+
+input,
+textarea,
+select {
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
