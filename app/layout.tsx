@@ -17,6 +17,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+  try {
+    const t = localStorage.getItem('theme');
+    if (t === 'light') document.documentElement.classList.add('light');
+  } catch(e) {}
+` }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

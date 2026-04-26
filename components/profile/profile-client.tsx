@@ -29,7 +29,7 @@ export function ProfileClient({ user }: Props) {
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [theme, setTheme] = useState<"dark" | "light">("dark");
+
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [bio, setBio] = useState("");
@@ -51,12 +51,7 @@ export function ProfileClient({ user }: Props) {
         }
     }, [profile]);
 
-    useEffect(() => {
-        const html = document.documentElement;
-        theme === "light"
-            ? html.classList.add("light")
-            : html.classList.remove("light");
-    }, [theme]);
+
 
     const saveProfile = useMutation({
         mutationFn: (data: Partial<Profile>) =>
@@ -114,62 +109,31 @@ export function ProfileClient({ user }: Props) {
     return (
         <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-sans)" }}>
 
-            {/* Header */}
-            <header className="profile-header">
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <button
-                        onClick={() => router.push("/dashboard")}
-                        style={{
-                            width: 32, height: 32, borderRadius: 8,
-                            background: "var(--surface)",
-                            border: "1px solid var(--border)",
-                            display: "flex", alignItems: "center",
-                            justifyContent: "center", cursor: "pointer",
-                        }}
-                    >
-                        <Ico d="M19 12H5 M12 19l-7-7 7-7" size={14} stroke="var(--text-2)" />
-                    </button>
-                    <div>
-                        <p style={{ fontSize: 15, fontWeight: 500, color: "var(--text)" }}>Profile</p>
-                        <p style={{ fontSize: 11, color: "var(--text-3)", fontFamily: "var(--font-mono)" }}
-                            className="hidden sm:block">
-                            Manage your account
-                        </p>
-                    </div>
-                </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <button
-                        onClick={() => setTheme(t => t === "dark" ? "light" : "dark")}
-                        style={{
-                            width: 32, height: 32, borderRadius: 8,
-                            background: "var(--surface)",
-                            border: "1px solid var(--border)",
-                            display: "flex", alignItems: "center",
-                            justifyContent: "center", cursor: "pointer",
-                        }}
-                    >
-                        <Ico d={theme === "dark" ? P.sun : P.moon} size={13} stroke="var(--text-2)" />
-                    </button>
-                    <button
-                        onClick={() => saveProfile.mutate({ name, username, bio, avatarColor })}
-                        disabled={saveProfile.isPending}
-                        style={{
-                            height: 36, padding: "0 20px",
-                            background: saved ? "#10b981" : "var(--amber)",
-                            color: "#fff", border: "none", borderRadius: 8,
-                            fontSize: 13, fontWeight: 600,
-                            cursor: saveProfile.isPending ? "not-allowed" : "pointer",
-                            fontFamily: "var(--font-sans)",
-                            opacity: saveProfile.isPending ? 0.7 : 1,
-                            whiteSpace: "nowrap", minWidth: 120,
-                            transition: "background .2s",
-                        }}
-                    >
-                        {saved ? "Saved ✓" : saveProfile.isPending ? "Saving..." : "Save changes"}
-                    </button>
-                </div>
-            </header>
+            <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "16px 24px", borderBottom: "1px solid var(--border)",
+            }}>
+                <p style={{ fontSize: 15, fontWeight: 500, color: "var(--text)" }}>
+                    Profile settings
+                </p>
+                <button
+                    onClick={() => saveProfile.mutate({ name, username, bio, avatarColor })}
+                    disabled={saveProfile.isPending}
+                    style={{
+                        height: 36, padding: "0 20px",
+                        background: saved ? "#10b981" : "var(--amber)",
+                        color: "#fff", border: "none", borderRadius: 8,
+                        fontSize: 13, fontWeight: 600,
+                        cursor: saveProfile.isPending ? "not-allowed" : "pointer",
+                        fontFamily: "var(--font-sans)",
+                        opacity: saveProfile.isPending ? 0.7 : 1,
+                        whiteSpace: "nowrap",
+                        transition: "background .2s",
+                    }}
+                >
+                    {saved ? "Saved ✓" : saveProfile.isPending ? "Saving..." : "Save changes"}
+                </button>
+            </div>
 
             {/* Content */}
             <div className="profile-content">

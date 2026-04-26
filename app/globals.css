@@ -2,6 +2,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
+html {
+  background: #0C0B09;
+}
+
+html.light {
+  background: #F9F8F5;
+}
+
 /* ── Tailwind v4: custom dark variant ── */
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -306,4 +314,34 @@ input:focus,
 textarea:focus {
   outline: none;
   box-shadow: none;
+}
+
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 28px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 20px 16px 40px;
+  }
+}
+
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 28px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 20px 16px 40px;
+  }
 }

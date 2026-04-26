@@ -2,9 +2,9 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Ico, P } from "./icons";
 import { Theme } from "./tokens";
-import { useRouter } from "next/navigation";
 
 type Room = {
     id: string;
@@ -19,9 +19,9 @@ type Props = {
 
 export function RoomsGrid({ T, isMobile }: Props) {
     const queryClient = useQueryClient();
+    const router = useRouter();
     const [newRoomName, setNewRoomName] = useState("");
     const [creating, setCreating] = useState(false);
-    const router = useRouter();
 
     const { data: rooms = [] } = useQuery<Room[]>({
         queryKey: ["rooms"],
@@ -43,39 +43,39 @@ export function RoomsGrid({ T, isMobile }: Props) {
         },
     });
 
-    const s = (obj: React.CSSProperties): React.CSSProperties => obj;
-
     return (
         <div>
             <div style={{
                 display: "flex", alignItems: "center",
                 justifyContent: "space-between", marginBottom: 12,
             }}>
-                <span style={s({ fontSize: 14, fontWeight: 500, color: T.text })}>
-                    Active Rooms
-                </span>
+                <span style={{
+                    fontSize: 14, fontWeight: 500, color: "var(--text)",
+                }}>Active Rooms</span>
             </div>
 
             <div style={{
                 display: "grid",
-                // 1 column on mobile, 3 on desktop
                 gridTemplateColumns: isMobile ? "1fr" : "repeat(3,1fr)",
                 gap: 10,
             }}>
                 {rooms.map(r => (
-                    <div key={r.id} style={s({
-                        background: T.bg3, border: `1px solid ${T.border}`,
-                        borderRadius: 12, padding: "16px 18px", cursor: "pointer",
+                    <div key={r.id} style={{
+                        background: T.bg3,
+                        border: `1px solid ${T.border}`,
+                        borderRadius: 12,
+                        padding: "16px 18px",
+                        cursor: "pointer",
                         transition: "border-color .2s",
-                    })}>
+                    }}>
                         <div style={{
                             display: "flex", justifyContent: "space-between",
                             alignItems: "flex-start", marginBottom: 12,
                         }}>
-                            <span style={s({
-                                fontSize: 13, fontWeight: 500, color: T.text,
-                                lineHeight: 1.3,
-                            })}>{r.name}</span>
+                            <span style={{
+                                fontSize: 13, fontWeight: 500,
+                                color: "var(--text)", lineHeight: 1.3,
+                            }}>{r.name}</span>
                             <div style={{
                                 width: 7, height: 7, borderRadius: "50%",
                                 background: "#10b981", marginTop: 4, flexShrink: 0,
@@ -84,12 +84,14 @@ export function RoomsGrid({ T, isMobile }: Props) {
                         <div style={{ display: "flex", justifyContent: "flex-end" }}>
                             <button
                                 onClick={() => router.push(`/rooms/${r.id}`)}
-                                style={s({
+                                style={{
                                     fontSize: 11, fontWeight: 500,
-                                    background: T.surface, border: `1px solid ${T.border}`,
-                                    borderRadius: 6, padding: "4px 12px", color: T.text2,
-                                    cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
-                                })}>
+                                    background: T.surface,
+                                    border: `1px solid ${T.border}`,
+                                    borderRadius: 6, padding: "4px 12px",
+                                    color: "var(--text-2)", cursor: "pointer",
+                                    fontFamily: "var(--font-sans)",
+                                }}>
                                 Open
                             </button>
                         </div>
@@ -97,61 +99,75 @@ export function RoomsGrid({ T, isMobile }: Props) {
                 ))}
 
                 {creating ? (
-                    <div style={s({
-                        border: `1px solid ${T.border}`, borderRadius: 12,
-                        padding: "16px 18px", display: "flex",
-                        flexDirection: "column", gap: 8,
-                    })}>
+                    <div style={{
+                        border: `1px solid ${T.border}`,
+                        borderRadius: 12, padding: "16px 18px",
+                        display: "flex", flexDirection: "column", gap: 8,
+                    }}>
                         <input
                             autoFocus
                             value={newRoomName}
                             onChange={e => setNewRoomName(e.target.value)}
                             onKeyDown={e => e.key === "Enter" && newRoomName && createRoom.mutate(newRoomName)}
                             placeholder="Room name..."
-                            style={s({
-                                background: T.surface, border: `1px solid ${T.border}`,
-                                borderRadius: 6, padding: "7px 10px", fontSize: 13,
-                                color: T.text, fontFamily: "'DM Sans',sans-serif",
+                            style={{
+                                background: T.surface,
+                                border: `1px solid ${T.border}`,
+                                borderRadius: 6, padding: "7px 10px",
+                                fontSize: 13, color: "var(--text)",
+                                fontFamily: "var(--font-sans)",
                                 outline: "none", width: "100%",
-                            })}
+                            }}
                         />
                         <div style={{ display: "flex", gap: 6 }}>
                             <button
                                 onClick={() => newRoomName && createRoom.mutate(newRoomName)}
-                                style={s({
-                                    flex: 1, padding: "6px 0", background: T.amber,
-                                    color: "#fff", border: "none", borderRadius: 6,
-                                    fontSize: 12, fontWeight: 600, cursor: "pointer",
-                                    fontFamily: "'DM Sans',sans-serif",
-                                })}>
+                                style={{
+                                    flex: 1, padding: "6px 0",
+                                    background: "var(--amber)",
+                                    color: "#fff", border: "none",
+                                    borderRadius: 6, fontSize: 12,
+                                    fontWeight: 600, cursor: "pointer",
+                                    fontFamily: "var(--font-sans)",
+                                }}>
                                 {createRoom.isPending ? "Creating..." : "Create"}
                             </button>
                             <button
                                 onClick={() => setCreating(false)}
-                                style={s({
-                                    padding: "6px 12px", background: T.surface,
-                                    color: T.text2, border: `1px solid ${T.border}`,
-                                    borderRadius: 6, fontSize: 12, cursor: "pointer",
-                                    fontFamily: "'DM Sans',sans-serif",
-                                })}>
+                                style={{
+                                    padding: "6px 12px",
+                                    background: T.surface,
+                                    color: "var(--text-2)",
+                                    border: `1px solid ${T.border}`,
+                                    borderRadius: 6, fontSize: 12,
+                                    cursor: "pointer",
+                                    fontFamily: "var(--font-sans)",
+                                }}>
                                 Cancel
                             </button>
                         </div>
                     </div>
                 ) : (
-                    <div onClick={() => setCreating(true)} style={s({
-                        border: `1px dashed ${T.border}`, borderRadius: 12,
-                        display: "flex", flexDirection: "column", alignItems: "center",
-                        justifyContent: "center", gap: 7, minHeight: 90, cursor: "pointer",
-                    })}>
-                        <div style={s({
+                    <div
+                        onClick={() => setCreating(true)}
+                        style={{
+                            border: `1px dashed ${T.border}`,
+                            borderRadius: 12,
+                            display: "flex", flexDirection: "column",
+                            alignItems: "center", justifyContent: "center",
+                            gap: 7, minHeight: 90, cursor: "pointer",
+                        }}>
+                        <div style={{
                             width: 28, height: 28, borderRadius: "50%",
                             border: `1px solid ${T.border}`,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                        })}>
-                            <Ico d={P.plus} size={13} stroke={T.text3} />
+                            display: "flex", alignItems: "center",
+                            justifyContent: "center",
+                        }}>
+                            <Ico d={P.plus} size={13} stroke="var(--text-3)" />
                         </div>
-                        <span style={s({ fontSize: 12, color: T.text3 })}>Create room</span>
+                        <span style={{
+                            fontSize: 12, color: "var(--text-3)",
+                        }}>Create room</span>
                     </div>
                 )}
             </div>
