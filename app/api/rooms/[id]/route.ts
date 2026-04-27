@@ -40,3 +40,34 @@ export async function GET(
         members,
     });
 }
+
+export async function PATCH(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id } = await params;
+    const { name } = await req.json();
+
+    if (!name) return Response.json({ error: "Name required" }, { status: 400 });
+
+    await db.update(rooms).set({ name, updatedAt: new Date() }).where(eq(rooms.id, id));
+
+    return Response.json({ success: true });
+}
+
+export async function DELETE(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id } = await params;
+
+    await db.delete(rooms).where(eq(rooms.id, id));
+
+    return Response.json({ success: true });
+}
