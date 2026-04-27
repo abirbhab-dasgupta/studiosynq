@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { db, rooms, roomMembers } from "@/lib/db";
+import { db, rooms, roomMembers, user } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 
@@ -12,7 +12,6 @@ export async function GET(
 
     const { id } = await params;
 
-    // Fetch the room details
     const room = await db
         .select()
         .from(rooms)
@@ -23,13 +22,17 @@ export async function GET(
         return Response.json({ error: "Room not found" }, { status: 404 });
     }
 
-
+    // Join room_members with user table to get real name and image
     const members = await db
         .select({
             userId: roomMembers.userId,
             joinedAt: roomMembers.joinedAt,
+            name: user.name,
+            image: user.image,
+            avatarColor: user.avatarColor,
         })
         .from(roomMembers)
+        .innerJoin(user, eq(roomMembers.userId, user.id))
         .where(eq(roomMembers.roomId, id));
 
     return Response.json({

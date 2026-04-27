@@ -2,13 +2,16 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DARK, LIGHT } from "@/components/dashboard/tokens";
-import { Ico, P } from "@/components/dashboard/icons";
+import { Ico } from "@/components/dashboard/icons";
 
 type Member = {
     userId: string;
     joinedAt: string;
+    name: string;
+    image: string | null;
+    avatarColor: string | null;
 };
 
 type Room = {
@@ -26,9 +29,28 @@ type Props = {
 
 export function RoomClient({ roomId, user }: Props) {
     const router = useRouter();
-    const [theme] = useState<"dark" | "light">("dark");
+    const [theme, setTheme] = useState<"dark" | "light">(() => {
+        if (typeof window === "undefined") return "dark";
+        return (localStorage.getItem("theme") as "dark" | "light") ?? "dark";
+    });
     const T = theme === "dark" ? DARK : LIGHT;
 
+    useEffect(() => {
+        const isLight = document.documentElement.classList.contains("light");
+        setTheme(isLight ? "light" : "dark");
+
+        const observer = new MutationObserver(() => {
+            const isLight = document.documentElement.classList.contains("light");
+            setTheme(isLight ? "light" : "dark");
+        });
+
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
+        });
+
+        return () => observer.disconnect();
+    }, []);
 
     const { data: room, isLoading } = useQuery<Room>({
         queryKey: ["room", roomId],
@@ -41,9 +63,9 @@ export function RoomClient({ roomId, user }: Props) {
     if (isLoading) {
         return (
             <div style={s({
-                height: "100vh", display: "flex", alignItems: "center",
-                justifyContent: "center", background: T.bg, color: T.text2,
-                fontFamily: "'DM Sans',sans-serif", fontSize: 14,
+                flex: 1, display: "flex", alignItems: "center",
+                justifyContent: "center", background: "var(--bg)",
+                color: "var(--text-2)", fontFamily: "var(--font-sans)", fontSize: 14,
             })}>
                 Loading room...
             </div>
@@ -53,9 +75,9 @@ export function RoomClient({ roomId, user }: Props) {
     if (!room || (room as any).error) {
         return (
             <div style={s({
-                height: "100vh", display: "flex", alignItems: "center",
-                justifyContent: "center", background: T.bg, color: T.text2,
-                fontFamily: "'DM Sans',sans-serif", fontSize: 14,
+                flex: 1, display: "flex", alignItems: "center",
+                justifyContent: "center", background: "var(--bg)",
+                color: "var(--text-2)", fontFamily: "var(--font-sans)", fontSize: 14,
             })}>
                 Room not found.
             </div>
@@ -63,168 +85,161 @@ export function RoomClient({ roomId, user }: Props) {
     }
 
     return (
-        <div style={s({
-            height: "100vh", display: "flex", flexDirection: "column",
-            background: T.bg, color: T.text, fontFamily: "'DM Sans',sans-serif",
-            overflow: "hidden",
-        })}>
 
-            {/* ── Top bar ── */}
-            <header style={s({
-                height: 56, flexShrink: 0, display: "flex", alignItems: "center",
+        <div style={{
+            height: "100%", display: "flex", flexDirection: "column",
+            background: "var(--bg)", color: "var(--text)",
+            fontFamily: "var(--font-sans)", overflow: "hidden",
+        }}>
+
+            {/* ── Room title bar ── */}
+            <div style={{
+                height: 52, flexShrink: 0, display: "flex", alignItems: "center",
                 justifyContent: "space-between", padding: "0 24px",
-                background: T.bg2, borderBottom: `1px solid ${T.border}`,
-            })}>
+                borderBottom: "1px solid var(--border)",
+            }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    {/* Back button — goes back to dashboard */}
                     <button
-                        onClick={() => router.push("/dashboard")}
-                        style={s({
-                            width: 32, height: 32, borderRadius: 8,
-                            background: T.surface, border: `1px solid ${T.border}`,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            cursor: "pointer",
-                        })}>
-                        <Ico d="M19 12H5 M12 19l-7-7 7-7" size={14} stroke={T.text2} />
+                        onClick={() => router.back()}
+                        style={{
+                            width: 28, height: 28, borderRadius: 7,
+                            background: "var(--surface)",
+                            border: "1px solid var(--border)",
+                            display: "flex", alignItems: "center",
+                            justifyContent: "center", cursor: "pointer",
+                        }}>
+                        <Ico d="M19 12H5 M12 19l-7-7 7-7" size={13} stroke="var(--text-2)" />
                     </button>
-
-                    {/* Room name */}
                     <div>
-                        <div style={s({
-                            fontSize: 15, fontWeight: 500, color: T.text,
-                            fontFamily: "'DM Sans',sans-serif",
-                        })}>{room.name}</div>
-                        <div style={s({
-                            fontSize: 11, color: T.text3,
-                            fontFamily: "'DM Mono',monospace",
-                        })}>
+                        <p style={{ fontSize: 14, fontWeight: 500, color: "var(--text)" }}>
+                            {room.name}
+                        </p>
+                        <p style={{
+                            fontSize: 11, color: "var(--text-3)",
+                            fontFamily: "var(--font-mono)",
+                        }}>
                             {room.members.length} member{room.members.length !== 1 ? "s" : ""}
-                        </div>
+                        </p>
                     </div>
                 </div>
 
-                {/* Live indicator */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <div style={{
-                            width: 7, height: 7, borderRadius: "50%",
-                            background: "#10b981",
-                            // Pulse animation via box-shadow
-                            boxShadow: "0 0 0 2px rgba(16,185,129,0.2)",
-                        }} />
-                        <span style={s({
-                            fontSize: 12, color: T.text2,
-                            fontFamily: "'DM Mono',monospace",
-                        })}>Live</span>
-                    </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{
+                        width: 7, height: 7, borderRadius: "50%",
+                        background: "#10b981",
+                        boxShadow: "0 0 0 2px rgba(16,185,129,0.2)",
+                    }} />
+                    <span style={{
+                        fontSize: 12, color: "var(--text-2)",
+                        fontFamily: "var(--font-mono)",
+                    }}>Live</span>
                 </div>
-            </header>
+            </div>
 
             {/* ── Main content ── */}
-            <div style={s({
-                flex: 1, overflow: "hidden", display: "flex",
-                flexDirection: "column", padding: "24px",
-                gap: 20,
-            })}>
-
-                {/* Section label */}
-                <div style={s({
-                    fontSize: 10, fontWeight: 600, textTransform: "uppercase",
-                    letterSpacing: ".12em", color: T.text3,
-                    fontFamily: "'DM Mono',monospace",
-                })}>Members</div>
-
-                {/* Member grid */}
+            <div style={{
+                flex: 1, overflow: "auto", padding: "24px",
+                display: "flex", flexDirection: "column", gap: 20,
+            }}>
                 <div style={{
-                    display: "flex", flexWrap: "wrap", gap: 12,
-                }}>
+                    fontSize: 10, fontWeight: 600, textTransform: "uppercase",
+                    letterSpacing: ".12em", color: "var(--text-3)",
+                    fontFamily: "var(--font-mono)",
+                }}>Members</div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
                     {room.members.map((member) => {
-                        // Check if this member is the current logged-in user
                         const isYou = member.userId === user.id;
+                        const color = member.avatarColor ?? "#D97706";
 
                         return (
-                            <div key={member.userId} style={s({
+                            <div key={member.userId} style={{
                                 display: "flex", alignItems: "center", gap: 10,
                                 padding: "10px 14px",
-                                background: T.bg3, border: `1px solid ${T.border}`,
+                                background: "var(--bg3)",
+                                border: "1px solid var(--border)",
                                 borderRadius: 12,
-                            })}>
-                                {/* Avatar circle with first letter of userId */}
-                                <div style={s({
-                                    width: 32, height: 32, borderRadius: "50%",
-                                    background: isYou
-                                        ? "rgba(217,119,6,0.1)"
-                                        : T.surface,
-                                    border: `1px solid ${isYou
-                                        ? "rgba(217,119,6,0.3)"
-                                        : T.border}`,
-                                    color: isYou ? "#D97706" : T.text2,
-                                    fontSize: 12, fontWeight: 600,
-                                    display: "flex", alignItems: "center",
-                                    justifyContent: "center",
-                                    fontFamily: "'DM Mono',monospace",
-                                })}>
-                                    {member.userId.charAt(0).toUpperCase()}
-                                </div>
+                            }}>
+                                {member.image ? (
+                                    <img
+                                        src={member.image}
+                                        alt={member.name}
+                                        style={{
+                                            width: 32, height: 32, borderRadius: "50%",
+                                            objectFit: "cover",
+                                            border: "2px solid var(--border)",
+                                            flexShrink: 0,
+                                        }}
+                                    />
+                                ) : (
+                                    <div style={{
+                                        width: 32, height: 32, borderRadius: "50%",
+                                        background: color + "22",
+                                        border: `2px solid ${color}55`,
+                                        color: color,
+                                        fontSize: 12, fontWeight: 600,
+                                        display: "flex", alignItems: "center",
+                                        justifyContent: "center",
+                                        fontFamily: "var(--font-mono)",
+                                        flexShrink: 0,
+                                    }}>
+                                        {(member.name ?? "?").charAt(0).toUpperCase()}
+                                    </div>
+                                )}
 
                                 <div>
-                                    <div style={s({
-                                        fontSize: 13, fontWeight: 500, color: T.text,
-                                        fontFamily: "'DM Sans',sans-serif",
-                                    })}>
-                                        {isYou ? user.name : "Member"}
+                                    <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text)" }}>
+                                        {member.name ?? "Member"}
                                         {isYou && (
-                                            <span style={s({
-                                                fontSize: 10, color: T.text3,
-                                                marginLeft: 6,
-                                                fontFamily: "'DM Mono',monospace",
-                                            })}>you</span>
+                                            <span style={{
+                                                fontSize: 10, color: "var(--text-3)",
+                                                marginLeft: 6, fontFamily: "var(--font-mono)",
+                                            }}>you</span>
                                         )}
                                     </div>
-                                    <div style={s({
-                                        fontSize: 11, color: T.text3,
-                                        fontFamily: "'DM Mono',monospace",
-                                    })}>
-                                        {/* Show how long they've been in the room */}
+                                    <div style={{
+                                        fontSize: 11, color: "var(--text-3)",
+                                        fontFamily: "var(--font-mono)",
+                                    }}>
                                         Joined {new Date(member.joinedAt).toLocaleDateString()}
                                     </div>
                                 </div>
 
-                                {/* Online indicator */}
                                 <div style={{
                                     width: 7, height: 7, borderRadius: "50%",
-                                    background: "#10b981", marginLeft: 4,
+                                    background: "#10b981", marginLeft: 4, flexShrink: 0,
                                 }} />
                             </div>
                         );
                     })}
                 </div>
 
-                {/* Placeholder sections for features coming next */}
+                {/* Placeholder sections */}
                 <div style={{
-                    display: "grid", gridTemplateColumns: "1fr 1fr 1fr",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
                     gap: 12, marginTop: 8,
                 }}>
                     {["Task Board", "Room Chat", "AI Agents"].map(feature => (
-                        <div key={feature} style={s({
-                            border: `1px dashed ${T.border}`, borderRadius: 12,
-                            padding: "32px 20px",
+                        <div key={feature} style={{
+                            border: "1px dashed var(--border)",
+                            borderRadius: 12, padding: "32px 20px",
                             display: "flex", flexDirection: "column",
                             alignItems: "center", justifyContent: "center",
                             gap: 8,
-                        })}>
-                            <div style={s({
-                                fontSize: 13, fontWeight: 500, color: T.text3,
-                                fontFamily: "'DM Sans',sans-serif",
-                            })}>{feature}</div>
-                            <div style={s({
-                                fontSize: 11, color: T.text3,
-                                fontFamily: "'DM Mono',monospace",
-                            })}>Coming soon</div>
+                        }}>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-3)" }}>
+                                {feature}
+                            </div>
+                            <div style={{
+                                fontSize: 11, color: "var(--text-3)",
+                                fontFamily: "var(--font-mono)",
+                            }}>Coming soon</div>
                         </div>
                     ))}
                 </div>
             </div>
         </div>
     );
+
 }
