@@ -744,3 +744,195 @@ textarea:focus {
   cursor: pointer;
   font-family: var(--font-sans);
 }
+
+/* ══════════════════════════════════════════
+   Room workspace
+   ══════════════════════════════════════════ */
+
+.room-workspace {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.room-workspace-header {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.room-workspace-back {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.room-workspace-back:hover {
+  background: var(--surface-h);
+}
+
+.room-workspace-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.room-workspace-subtitle {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.room-workspace-live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-workspace-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.room-workspace-live-label {
+  font-size: 12px;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+}
+
+.room-workspace-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.room-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.room-member-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.room-member-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.room-member-you {
+  font-size: 10px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  margin-left: 6px;
+}
+
+.room-member-date {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.room-member-online {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+.room-placeholder-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.room-placeholder-card {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 32px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.room-placeholder-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.room-placeholder-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.room-placeholder-desc {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.room-placeholder-badge {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+@media (max-width: 768px) {
+  .room-workspace-header {
+    padding: 0 16px;
+  }
+
+  .room-workspace-body {
+    padding: 16px;
+  }
+
+  .room-placeholder-grid {
+    grid-template-columns: 1fr;
+  }
+}
