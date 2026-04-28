@@ -28,3 +28,11 @@ export const P = {
     book: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8",
     logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9",
 };
+
+export const ThreeDots = ({ size = 16, stroke = "currentColor" }: { size?: number; stroke?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={stroke}>
+        <circle cx="12" cy="5" r="1.5" />
+        <circle cx="12" cy="12" r="1.5" />
+        <circle cx="12" cy="19" r="1.5" />
+    </svg>
+);

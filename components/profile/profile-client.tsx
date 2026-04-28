@@ -111,9 +111,9 @@ export function ProfileClient({ user }: Props) {
 
             <div style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "16px 24px", borderBottom: "1px solid var(--border)",
+                padding: "16px 24px",
             }}>
-                <p style={{ fontSize: 15, fontWeight: 500, color: "var(--text)" }}>
+                <p className="rooms-page-title">
                     Profile settings
                 </p>
                 <button

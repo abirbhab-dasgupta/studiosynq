@@ -2,9 +2,9 @@
 
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Ico, P } from "@/components/dashboard/icons";
+import { Ico, P, ThreeDots } from "@/components/dashboard/icons";
 
-const DOTS = "M12 5h.01M12 12h.01M12 19h.01";
+const DOTS = "M12 5v.01M12 12v.01M12 19v.01";
 const PENCIL = "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z";
 const TRASH = "M3 6h18 M19 6l-1 14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2L3 6 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2";
 
@@ -42,7 +42,7 @@ export function RoomCard({ room, onDelete, onUpdate, isUpdating }: Props) {
     return (
         <div className="room-card">
 
-            {/* Top row — icon + status + three dot */}
+            {/* Top row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{
                     width: 34, height: 34, borderRadius: 9,
@@ -57,50 +57,26 @@ export function RoomCard({ room, onDelete, onUpdate, isUpdating }: Props) {
                         background: room.isActive ? "#10b981" : "var(--text-3)",
                     }} />
 
-                    {/* Three dot menu */}
                     <div style={{ position: "relative" }} ref={menuRef}>
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setMenuOpen(o => !o);
                             }}
-                            style={{
-                                width: 28, height: 28, borderRadius: 6,
-                                background: menuOpen ? "var(--surface-h)" : "transparent",
-                                border: "1px solid transparent",
-                                display: "flex", alignItems: "center",
-                                justifyContent: "center", cursor: "pointer",
-                                transition: "background .15s",
-                            }}
+                            className={`room-card-menu-btn ${menuOpen ? "active" : ""}`}
                         >
-                            <Ico d={DOTS} size={15} stroke="var(--text-2)" />
+                            <ThreeDots size={15} stroke="var(--text-2)" />
                         </button>
 
                         {menuOpen && (
-                            <div style={{
-                                position: "absolute", right: 0, top: 32,
-                                zIndex: 50, width: 148,
-                                background: "var(--bg2)",
-                                border: "1px solid var(--border-m)",
-                                borderRadius: 10,
-                                boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-                                overflow: "hidden",
-                            }}>
+                            <div className="room-card-dropdown">
                                 <button
+                                    className="room-card-dropdown-btn"
+                                    style={{ color: "var(--text-2)" }}
                                     onClick={() => {
                                         setEditing(true);
                                         setEditName(room.name);
                                         setMenuOpen(false);
-                                    }}
-                                    style={{
-                                        display: "flex", alignItems: "center",
-                                        gap: 8, width: "100%",
-                                        padding: "9px 12px",
-                                        background: "transparent",
-                                        border: "none", cursor: "pointer",
-                                        fontSize: 12, color: "var(--text-2)",
-                                        fontFamily: "var(--font-sans)",
-                                        textAlign: "left",
                                     }}
                                 >
                                     <Ico d={PENCIL} size={12} stroke="var(--text-2)" />
@@ -108,19 +84,11 @@ export function RoomCard({ room, onDelete, onUpdate, isUpdating }: Props) {
                                 </button>
                                 <div style={{ height: 1, background: "var(--border)" }} />
                                 <button
+                                    className="room-card-dropdown-btn"
+                                    style={{ color: "#ef4444" }}
                                     onClick={() => {
                                         onDelete(room.id);
                                         setMenuOpen(false);
-                                    }}
-                                    style={{
-                                        display: "flex", alignItems: "center",
-                                        gap: 8, width: "100%",
-                                        padding: "9px 12px",
-                                        background: "transparent",
-                                        border: "none", cursor: "pointer",
-                                        fontSize: 12, color: "#ef4444",
-                                        fontFamily: "var(--font-sans)",
-                                        textAlign: "left",
                                     }}
                                 >
                                     <Ico d={TRASH} size={12} stroke="#ef4444" />
@@ -132,7 +100,7 @@ export function RoomCard({ room, onDelete, onUpdate, isUpdating }: Props) {
                 </div>
             </div>
 
-            {/* Room name — editable or static */}
+            {/* Editable or static name */}
             {editing ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
                     <input
@@ -140,43 +108,29 @@ export function RoomCard({ room, onDelete, onUpdate, isUpdating }: Props) {
                         value={editName}
                         onChange={e => setEditName(e.target.value)}
                         onKeyDown={e => {
-                            if (e.key === "Enter" && editName) onUpdate(room.id, editName);
+                            if (e.key === "Enter" && editName) {
+                                onUpdate(room.id, editName);
+                                setEditing(false);
+                            }
                             if (e.key === "Escape") setEditing(false);
                         }}
-                        style={{
-                            height: 36, padding: "0 10px",
-                            background: "var(--surface)",
-                            border: "1px solid var(--border-m)",
-                            borderRadius: 7, fontSize: 13,
-                            color: "var(--text)",
-                            fontFamily: "var(--font-sans)", outline: "none",
-                        }}
+                        className="room-card-edit-input"
                     />
                     <div style={{ display: "flex", gap: 6 }}>
                         <button
-                            onClick={() => editName && onUpdate(room.id, editName)}
-                            disabled={isUpdating}
-                            style={{
-                                flex: 1, height: 30,
-                                background: "var(--amber)", color: "#fff",
-                                border: "none", borderRadius: 6,
-                                fontSize: 12, fontWeight: 600,
-                                cursor: "pointer", fontFamily: "var(--font-sans)",
-                                opacity: isUpdating ? 0.7 : 1,
+                            className="room-card-save-btn"
+                            onClick={() => {
+                                if (editName) {
+                                    onUpdate(room.id, editName);
+                                    setEditing(false);
+                                }
                             }}
                         >
-                            {isUpdating ? "Saving..." : "Save"}
+                            Save
                         </button>
                         <button
+                            className="room-card-cancel-btn"
                             onClick={() => setEditing(false)}
-                            style={{
-                                flex: 1, height: 30,
-                                background: "var(--surface)",
-                                border: "1px solid var(--border)",
-                                borderRadius: 6, fontSize: 12,
-                                color: "var(--text-2)", cursor: "pointer",
-                                fontFamily: "var(--font-sans)",
-                            }}
                         >
                             Cancel
                         </button>
