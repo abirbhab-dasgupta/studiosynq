@@ -40,14 +40,24 @@ export async function POST(
     }
 
     if (action === "approve") {
-        // Add user to room members
-        await db.insert(roomMembers).values({
-            id: crypto.randomUUID(),
-            roomId,
-            userId: request[0].userId,
-        });
+        // Check if already a member to prevent duplicates
+        const alreadyMember = await db
+            .select()
+            .from(roomMembers)
+            .where(and(
+                eq(roomMembers.roomId, roomId),
+                eq(roomMembers.userId, request[0].userId)
+            ))
+            .limit(1);
 
-        // Update request status
+        if (!alreadyMember.length) {
+            await db.insert(roomMembers).values({
+                id: crypto.randomUUID(),
+                roomId,
+                userId: request[0].userId,
+            });
+        }
+
         await db
             .update(roomJoinRequests)
             .set({ status: "approved", updatedAt: new Date() })
@@ -56,7 +66,6 @@ export async function POST(
         return Response.json({ success: true, action: "approved" });
     }
 
-    // Reject
     await db
         .update(roomJoinRequests)
         .set({ status: "rejected", updatedAt: new Date() })

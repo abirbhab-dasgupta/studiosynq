@@ -110,26 +110,32 @@ export function RoomRequests({ roomId }: Props) {
                         <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                             <button
                                 onClick={() => handleRequest.mutate({ requestId: req.id, action: "approve" })}
+                                disabled={handleRequest.isPending}
                                 style={{
                                     height: 28, padding: "0 12px",
-                                    background: "#10b981", color: "#fff",
-                                    border: "none", borderRadius: 6,
+                                    background: handleRequest.isPending ? "#6b7280" : "#10b981",
+                                    color: "#fff", border: "none", borderRadius: 6,
                                     fontSize: 11, fontWeight: 600,
-                                    cursor: "pointer",
+                                    cursor: handleRequest.isPending ? "not-allowed" : "pointer",
                                     fontFamily: "var(--font-sans)",
+                                    opacity: handleRequest.isPending ? 0.6 : 1,
+                                    transition: "background .15s",
                                 }}
                             >
-                                Approve
+                                {handleRequest.isPending ? "..." : "Approve"}
                             </button>
                             <button
                                 onClick={() => handleRequest.mutate({ requestId: req.id, action: "reject" })}
+                                disabled={handleRequest.isPending}
                                 style={{
                                     height: 28, padding: "0 12px",
                                     background: "transparent",
                                     border: "1px solid rgba(239,68,68,0.3)",
                                     borderRadius: 6, fontSize: 11,
-                                    color: "#ef4444", cursor: "pointer",
+                                    color: "#ef4444",
+                                    cursor: handleRequest.isPending ? "not-allowed" : "pointer",
                                     fontFamily: "var(--font-sans)",
+                                    opacity: handleRequest.isPending ? 0.6 : 1,
                                 }}
                             >
                                 Reject
