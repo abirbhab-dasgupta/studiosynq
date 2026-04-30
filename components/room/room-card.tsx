@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Ico, P, ThreeDots } from "@/components/dashboard/icons";
+import { Ico, P, ThreeDots, Crown } from "@/components/dashboard/icons";
 
 const PENCIL = "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z";
 const TRASH = "M3 6h18 M19 6l-1 14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2L3 6 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2";
@@ -16,12 +16,13 @@ type Room = {
 
 type Props = {
     room: Room;
+    isOwner: boolean;
     onDelete: (id: string) => void;
     onUpdate: (id: string, name: string) => void;
     isUpdating: boolean;
 };
 
-export function RoomCard({ room, onDelete, onUpdate, isUpdating }: Props) {
+export function RoomCard({ room, isOwner, onDelete, onUpdate, isUpdating }: Props) {
     const router = useRouter();
     const [menuOpen, setMenuOpen] = useState(false);
     const [editing, setEditing] = useState(false);
@@ -52,50 +53,52 @@ export function RoomCard({ room, onDelete, onUpdate, isUpdating }: Props) {
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div className="room-card-dot" style={{
-                        background: room.isActive ? "#10b981" : "var(--text-3)",
-                    }} />
+                    {isOwner && (
+                        <Crown size={13} stroke="var(--amber)" />
+                    )}
 
-                    <div style={{ position: "relative" }} ref={menuRef}>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setMenuOpen(o => !o);
-                            }}
-                            className={`room-card-menu-btn ${menuOpen ? "active" : ""}`}
-                        >
-                            <ThreeDots size={15} stroke="var(--text-2)" />
-                        </button>
+                    {isOwner && (
+                        <div style={{ position: "relative" }} ref={menuRef}>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setMenuOpen(o => !o);
+                                }}
+                                className={`room-card-menu-btn ${menuOpen ? "active" : ""}`}
+                            >
+                                <ThreeDots size={15} stroke="var(--text-2)" />
+                            </button>
 
-                        {menuOpen && (
-                            <div className="room-card-dropdown">
-                                <button
-                                    className="room-card-dropdown-btn"
-                                    style={{ color: "var(--text-2)" }}
-                                    onClick={() => {
-                                        setEditing(true);
-                                        setEditName(room.name);
-                                        setMenuOpen(false);
-                                    }}
-                                >
-                                    <Ico d={PENCIL} size={12} stroke="var(--text-2)" />
-                                    Rename
-                                </button>
-                                <div style={{ height: 1, background: "var(--border)" }} />
-                                <button
-                                    className="room-card-dropdown-btn"
-                                    style={{ color: "#ef4444" }}
-                                    onClick={() => {
-                                        onDelete(room.id);
-                                        setMenuOpen(false);
-                                    }}
-                                >
-                                    <Ico d={TRASH} size={12} stroke="#ef4444" />
-                                    Delete
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            {menuOpen && (
+                                <div className="room-card-dropdown">
+                                    <button
+                                        className="room-card-dropdown-btn"
+                                        style={{ color: "var(--text-2)" }}
+                                        onClick={() => {
+                                            setEditing(true);
+                                            setEditName(room.name);
+                                            setMenuOpen(false);
+                                        }}
+                                    >
+                                        <Ico d={PENCIL} size={12} stroke="var(--text-2)" />
+                                        Rename
+                                    </button>
+                                    <div style={{ height: 1, background: "var(--border)" }} />
+                                    <button
+                                        className="room-card-dropdown-btn"
+                                        style={{ color: "#ef4444" }}
+                                        onClick={() => {
+                                            onDelete(room.id);
+                                            setMenuOpen(false);
+                                        }}
+                                    >
+                                        <Ico d={TRASH} size={12} stroke="#ef4444" />
+                                        Delete
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 

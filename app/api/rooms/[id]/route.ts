@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db, rooms, roomMembers, user } from "@/lib/db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
 
 export async function GET(
@@ -22,7 +22,6 @@ export async function GET(
         return Response.json({ error: "Room not found" }, { status: 404 });
     }
 
-    // Join room_members with user table to get real name and image
     const members = await db
         .select({
             userId: roomMembers.userId,
@@ -53,6 +52,17 @@ export async function PATCH(
 
     if (!name) return Response.json({ error: "Name required" }, { status: 400 });
 
+    // Only owner can rename
+    const room = await db
+        .select()
+        .from(rooms)
+        .where(and(eq(rooms.id, id), eq(rooms.createdBy, session.user.id)))
+        .limit(1);
+
+    if (!room.length) {
+        return Response.json({ error: "Not authorized" }, { status: 403 });
+    }
+
     await db.update(rooms).set({ name, updatedAt: new Date() }).where(eq(rooms.id, id));
 
     return Response.json({ success: true });
@@ -66,6 +76,17 @@ export async function DELETE(
     if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
+
+    // Only owner can delete
+    const room = await db
+        .select()
+        .from(rooms)
+        .where(and(eq(rooms.id, id), eq(rooms.createdBy, session.user.id)))
+        .limit(1);
+
+    if (!room.length) {
+        return Response.json({ error: "Not authorized" }, { status: 403 });
+    }
 
     await db.delete(rooms).where(eq(rooms.id, id));
 

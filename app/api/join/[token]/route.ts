@@ -3,6 +3,8 @@ import { db, roomInvites, rooms, roomJoinRequests, roomMembers } from "@/lib/db"
 import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
 
+
+
 // GET — fetch room info from token (public, no auth required)
 export async function GET(
     req: Request,
@@ -23,7 +25,7 @@ export async function GET(
         .innerJoin(rooms, eq(roomInvites.roomId, rooms.id))
         .where(eq(roomInvites.token, token))
         .limit(1);
-
+    console.log("Invite found:", invite);
     if (!invite.length || !invite[0].isActive) {
         return Response.json({ error: "Invalid or expired invite link" }, { status: 404 });
     }
@@ -111,3 +113,6 @@ export async function POST(
 
     return Response.json({ status: "pending", roomId });
 }
+
+
+

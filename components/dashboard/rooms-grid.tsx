@@ -76,10 +76,7 @@ export function RoomsGrid({ T, isMobile }: Props) {
                                 fontSize: 13, fontWeight: 500,
                                 color: "var(--text)", lineHeight: 1.3,
                             }}>{r.name}</span>
-                            <div style={{
-                                width: 7, height: 7, borderRadius: "50%",
-                                background: "#10b981", marginTop: 4, flexShrink: 0,
-                            }} />
+
                         </div>
                         <div style={{ display: "flex", justifyContent: "flex-end" }}>
                             <button

@@ -36,3 +36,10 @@ export const ThreeDots = ({ size = 16, stroke = "currentColor" }: { size?: numbe
         <circle cx="12" cy="19" r="1.5" />
     </svg>
 );
+
+export const Crown = ({ size = 16, stroke = "currentColor" }: { size?: number; stroke?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 20h20M5 20L3 8l5 4 4-6 4 6 5-4-2 12" />
+    </svg>
+);

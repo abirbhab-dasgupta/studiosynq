@@ -24,11 +24,11 @@ export function JoinPageClient({ token }: Props) {
     // Fetch room info from token on mount
     useEffect(() => {
         fetch(`/api/join/${token}`)
-            .then(r => r.json())
-            .then(data => {
-                if (data.error) {
+            .then(async r => {
+                const data = await r.json();
+                if (!r.ok) {
                     setStatus("invalid");
-                    setErrorMsg(data.error);
+                    setErrorMsg(data.error ?? "Invalid or expired invite link");
                 } else {
                     setRoomInfo(data);
                     setStatus("ready");

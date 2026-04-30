@@ -13,6 +13,7 @@ type Room = {
     name: string;
     isActive: boolean;
     createdAt: string;
+    createdBy: string;
 };
 
 type Props = {
@@ -126,6 +127,7 @@ export function RoomsPageClient({ user }: Props) {
                         <RoomCard
                             key={r.id}
                             room={r}
+                            isOwner={r.createdBy === user.id}
                             onDelete={setDeleteConfirm}
                             onUpdate={(id, name) => updateRoom.mutate({ id, name })}
                             isUpdating={updateRoom.isPending}
