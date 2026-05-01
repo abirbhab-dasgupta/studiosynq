@@ -32,6 +32,8 @@ type Props = {
 
 export function RoomClient({ roomId, user }: Props) {
     const router = useRouter();
+    const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+    const [leaving, setLeaving] = useState(false);
 
     const [theme, setTheme] = useState<"dark" | "light">(() => {
         if (typeof window === "undefined") return "dark";
@@ -61,13 +63,15 @@ export function RoomClient({ roomId, user }: Props) {
         refetchInterval: 5000,
     });
 
+    async function handleLeave() {
+        setLeaving(true);
+        await fetch(`/api/rooms/${roomId}/leave`, { method: "DELETE" });
+        router.push("/rooms");
+    }
+
     if (isLoading) {
         return (
-            <div style={{
-                flex: 1, display: "flex", alignItems: "center",
-                justifyContent: "center", fontSize: 14,
-                color: "var(--text-2)", fontFamily: "var(--font-sans)",
-            }}>
+            <div className="flex-1 flex items-center justify-center text-[14px] text-var(--text-2)">
                 Loading room...
             </div>
         );
@@ -75,11 +79,7 @@ export function RoomClient({ roomId, user }: Props) {
 
     if (!room || (room as any).error) {
         return (
-            <div style={{
-                flex: 1, display: "flex", alignItems: "center",
-                justifyContent: "center", fontSize: 14,
-                color: "var(--text-2)", fontFamily: "var(--font-sans)",
-            }}>
+            <div className="flex-1 flex items-center justify-center text-[14px] text-var(--text-2)">
                 Room not found.
             </div>
         );
@@ -88,9 +88,78 @@ export function RoomClient({ roomId, user }: Props) {
     return (
         <div className="room-workspace">
 
+            {/* Leave confirmation dialog */}
+            {showLeaveConfirm && (
+                <div style={{
+                    position: "fixed", inset: 0, zIndex: 100,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: "rgba(0,0,0,0.5)",
+                    backdropFilter: "blur(4px)",
+                }}>
+                    <div style={{
+                        background: "var(--bg2)", border: "1px solid var(--border-m)",
+                        borderRadius: 16, padding: "28px 28px 24px",
+                        width: 320, display: "flex", flexDirection: "column" as const, gap: 8,
+                        boxShadow: "0 24px 48px rgba(0,0,0,0.3)",
+                    }}>
+                        <div style={{
+                            width: 36, height: 36, borderRadius: 10,
+                            background: "rgba(239,68,68,0.1)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            marginBottom: 4,
+                        }}>
+                            <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
+                                stroke="#ef4444" strokeWidth="1.6"
+                                strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9" />
+                            </svg>
+                        </div>
+
+                        <div style={{
+                            fontSize: 15, fontWeight: 500, color: "var(--text)",
+                            fontFamily: "'DM Sans',sans-serif",
+                        }}>Leave room?</div>
+
+                        <div style={{
+                            fontSize: 12, color: "var(--text-2)", lineHeight: 1.5,
+                            fontFamily: "'DM Sans',sans-serif", marginBottom: 8,
+                        }}>
+                            You&apos;ll be removed from <strong>{room.name}</strong>. You&apos;ll need a new invite to rejoin.
+                        </div>
+
+                        <div style={{ display: "flex", gap: 8 }}>
+                            <button
+                                onClick={() => setShowLeaveConfirm(false)}
+                                style={{
+                                    flex: 1, height: 34,
+                                    background: "var(--surface)", border: "1px solid var(--border)",
+                                    borderRadius: 8, fontSize: 12, fontWeight: 500,
+                                    color: "var(--text-2)", cursor: "pointer",
+                                    fontFamily: "'DM Sans',sans-serif",
+                                }}>
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleLeave}
+                                disabled={leaving}
+                                style={{
+                                    flex: 1, height: 34,
+                                    background: "#ef4444", border: "none",
+                                    borderRadius: 8, fontSize: 12, fontWeight: 600,
+                                    color: "#fff", cursor: leaving ? "not-allowed" : "pointer",
+                                    fontFamily: "'DM Sans',sans-serif",
+                                    opacity: leaving ? 0.7 : 1,
+                                }}>
+                                {leaving ? "Leaving..." : "Yes, leave"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="room-workspace-header">
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div className="flex items-center gap-3">
                     <button
                         className="room-workspace-back"
                         onClick={() => router.back()}
@@ -105,11 +174,22 @@ export function RoomClient({ roomId, user }: Props) {
                     </div>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    {/* Invite button — only show to room owner */}
+                <div className="flex items-center gap-2.5">
+                    {/* Invite — owner only */}
                     {room.createdBy === user.id && (
                         <RoomInvite roomId={room.id} />
                     )}
+
+                    {/* Leave — non-owners only */}
+                    {room.createdBy !== user.id && (
+                        <button
+                            className="room-leave-btn"
+                            onClick={() => setShowLeaveConfirm(true)}
+                        >
+                            Leave room
+                        </button>
+                    )}
+
                     <div className="room-workspace-live">
                         <div className="room-workspace-live-dot" />
                         <span className="room-workspace-live-label">Live</span>
@@ -119,7 +199,6 @@ export function RoomClient({ roomId, user }: Props) {
 
             {/* Body */}
             <div className="room-workspace-body">
-                {/* Pending requests — only visible to room owner */}
                 {room.createdBy === user.id && (
                     <RoomRequests roomId={room.id} />
                 )}

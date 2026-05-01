@@ -937,6 +937,27 @@ textarea:focus {
   }
 }
 
+.room-leave-btn {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ef4444;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: background .15s, border-color .15s;
+}
+
+.room-leave-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
 
 /* ══════════════════════════════════════════
    Join page
