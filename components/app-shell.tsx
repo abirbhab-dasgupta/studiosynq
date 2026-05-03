@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Ico, P } from "@/components/dashboard/icons";
+import { DARK, LIGHT } from "@/components/dashboard/tokens";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 
@@ -42,6 +44,8 @@ export function AppShell({ user, children }: Props) {
         return (localStorage.getItem("theme") as "dark" | "light") ?? "dark";
     });
 
+    const T = theme === "dark" ? DARK : LIGHT;
+
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth < 768);
         check();
@@ -49,13 +53,11 @@ export function AppShell({ user, children }: Props) {
         return () => window.removeEventListener("resize", check);
     }, []);
 
-    // Read saved theme on first load
     useEffect(() => {
         const saved = localStorage.getItem("theme") as "dark" | "light" | null;
         if (saved) setTheme(saved);
     }, []);
 
-    // Apply theme class and save to localStorage whenever theme changes
     useEffect(() => {
         const html = document.documentElement;
         theme === "light"
@@ -178,10 +180,7 @@ export function AppShell({ user, children }: Props) {
                         alt="Studiosynq"
                         width={22}
                         height={22}
-                        style={{
-                            borderRadius: 5,
-                            objectFit: "cover",
-                        }}
+                        style={{ borderRadius: 5, objectFit: "cover" }}
                     />
                     <span style={s({
                         fontSize: 13, fontWeight: 500,
@@ -255,8 +254,6 @@ export function AppShell({ user, children }: Props) {
                     padding: "10px 12px",
                     borderTop: "1px solid var(--border)", flexShrink: 0,
                 })}>
-
-
                     <div style={{ flex: 1 }}>
                         <div style={s({
                             display: "flex", alignItems: "center",
@@ -307,7 +304,6 @@ export function AppShell({ user, children }: Props) {
                     <Ico d={P.logout} size={12} stroke="#ef4444" />
                     Sign out
                 </button>
-
             </aside>
 
             {/* ── Main area ── */}
@@ -364,6 +360,10 @@ export function AppShell({ user, children }: Props) {
                         display: "flex", alignItems: "center",
                         gap: 8, marginLeft: "auto",
                     })}>
+                        {/* Notification bell */}
+                        <NotificationBell T={T} />
+
+                        {/* Theme toggle */}
                         <button
                             onClick={() => setTheme(t => t === "dark" ? "light" : "dark")}
                             style={s({

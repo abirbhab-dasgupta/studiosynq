@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { db, rooms, roomJoinRequests, roomMembers } from "@/lib/db";
+import { db, rooms, roomJoinRequests, roomMembers, notifications } from "@/lib/db";
 import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
 
@@ -40,7 +40,6 @@ export async function POST(
     }
 
     if (action === "approve") {
-        // Check if already a member to prevent duplicates
         const alreadyMember = await db
             .select()
             .from(roomMembers)
@@ -63,13 +62,40 @@ export async function POST(
             .set({ status: "approved", updatedAt: new Date() })
             .where(eq(roomJoinRequests.id, requestId));
 
+        await db.insert(notifications).values({
+            userId: request[0].userId,
+            type: "approved",
+            roomName: room[0].name,
+            roomId,
+            message: `Your request to join "${room[0].name}" was approved. Welcome in!`,
+        });
+
         return Response.json({ success: true, action: "approved" });
     }
 
+    // Reject
     await db
         .update(roomJoinRequests)
         .set({ status: "rejected", updatedAt: new Date() })
         .where(eq(roomJoinRequests.id, requestId));
+
+    // Nullify roomId on old approved notifications so Go to room stops working
+    await db
+        .update(notifications)
+        .set({ roomId: null })
+        .where(and(
+            eq(notifications.userId, request[0].userId),
+            eq(notifications.type, "approved"),
+            eq(notifications.roomId, roomId)
+        ));
+
+    await db.insert(notifications).values({
+        userId: request[0].userId,
+        type: "rejected",
+        roomName: room[0].name,
+        roomId,
+        message: `Your request to join "${room[0].name}" was declined.`,
+    });
 
     return Response.json({ success: true, action: "rejected" });
 }

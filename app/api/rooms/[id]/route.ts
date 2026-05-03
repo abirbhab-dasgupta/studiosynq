@@ -22,6 +22,22 @@ export async function GET(
         return Response.json({ error: "Room not found" }, { status: 404 });
     }
 
+    // Check membership — owner always has access
+    const isMember = await db
+        .select()
+        .from(roomMembers)
+        .where(and(
+            eq(roomMembers.roomId, id),
+            eq(roomMembers.userId, session.user.id)
+        ))
+        .limit(1);
+
+    const isOwner = room[0].createdBy === session.user.id;
+
+    if (!isOwner && !isMember.length) {
+        return Response.json({ error: "You do not have access to this room" }, { status: 403 });
+    }
+
     const members = await db
         .select({
             userId: roomMembers.userId,
@@ -52,7 +68,6 @@ export async function PATCH(
 
     if (!name) return Response.json({ error: "Name required" }, { status: 400 });
 
-    // Only owner can rename
     const room = await db
         .select()
         .from(rooms)
@@ -77,7 +92,6 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Only owner can delete
     const room = await db
         .select()
         .from(rooms)

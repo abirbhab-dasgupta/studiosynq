@@ -43,32 +43,46 @@ export function JoinPageClient({ token }: Props) {
     async function handleJoin() {
         setStatus("submitting");
 
-        const res = await fetch(`/api/join/${token}`, { method: "POST" });
-        const data = await res.json();
+        try {
+            const res = await fetch(`/api/join/${token}`, { method: "POST" });
 
-        if (res.status === 401) {
-            // Not signed in — redirect to sign in with return URL
-            router.push(`/auth/sign-in?redirect=/join/${token}`);
-            return;
+            if (res.status === 401) {
+                router.push(`/auth/sign-in?redirect=/join/${token}`);
+                return;
+            }
+
+            const data = await res.json();
+            console.log("Join response:", data);
+
+            if (data.status === "joined") {
+                router.push(`/rooms/${data.roomId}`);
+                return;
+            }
+
+            if (data.status === "already_member") {
+                router.push(`/rooms/${data.roomId}`);
+                return;
+            }
+
+            if (data.status === "pending") {
+                setStatus("pending");
+                return;
+            }
+
+            if (data.error) {
+                setStatus("error");
+                setErrorMsg(data.error);
+                return;
+            }
+
+            setStatus("error");
+            setErrorMsg("Something went wrong. Please try again.");
+
+        } catch (err) {
+            console.error("Join error:", err);
+            setStatus("error");
+            setErrorMsg("Something went wrong. Please try again.");
         }
-
-        if (data.status === "joined") {
-            router.push(`/rooms/${data.roomId}`);
-            return;
-        }
-
-        if (data.status === "already_member") {
-            router.push(`/rooms/${data.roomId}`);
-            return;
-        }
-
-        if (data.status === "pending") {
-            setStatus("pending");
-            return;
-        }
-
-        setStatus("error");
-        setErrorMsg("Something went wrong. Please try again.");
     }
 
     return (

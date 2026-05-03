@@ -8,6 +8,7 @@ import * as agentLogsSchema from "./schema/agent_logs";
 import * as messagesSchema from "./schema/messages";
 import * as roomInvitesSchema from "./schema/room_invites";
 import * as roomJoinRequestsSchema from "./schema/room_join_requests";
+import * as notificationsSchema from "./schema/notifications";
 
 const sql = neon(process.env.DATABASE_URL!);
 
@@ -21,6 +22,7 @@ export const db = drizzle(sql, {
         ...messagesSchema,
         ...roomInvitesSchema,
         ...roomJoinRequestsSchema,
+        ...notificationsSchema,
     },
 });
 
@@ -32,3 +34,4 @@ export * from "./schema/agent_logs";
 export * from "./schema/messages";
 export * from "./schema/room_invites";
 export * from "./schema/room_join_requests";
+export * from "./schema/notifications";

@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { db, rooms, roomMembers } from "@/lib/db";
+import { db, rooms, roomMembers, roomJoinRequests, notifications } from "@/lib/db";
 import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
 
@@ -12,7 +12,7 @@ export async function DELETE(
 
     const { id: roomId } = await params;
 
-    // Room owner cannot leave their own room — they must delete it
+    // Room owner cannot leave — must delete the room
     const room = await db
         .select()
         .from(rooms)
@@ -29,12 +29,30 @@ export async function DELETE(
         }, { status: 403 });
     }
 
-    // Remove from room_members
+    // Remove from room members
     await db
         .delete(roomMembers)
         .where(and(
             eq(roomMembers.roomId, roomId),
             eq(roomMembers.userId, session.user.id)
+        ));
+
+    // Clean up join request so they can re-request after leaving
+    await db
+        .delete(roomJoinRequests)
+        .where(and(
+            eq(roomJoinRequests.roomId, roomId),
+            eq(roomJoinRequests.userId, session.user.id)
+        ));
+
+    // Nullify roomId on approved notifications so Go to room stops working
+    await db
+        .update(notifications)
+        .set({ roomId: null })
+        .where(and(
+            eq(notifications.userId, session.user.id),
+            eq(notifications.type, "approved"),
+            eq(notifications.roomId, roomId)
         ));
 
     return Response.json({ success: true });

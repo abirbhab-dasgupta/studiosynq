@@ -1121,3 +1121,85 @@ textarea:focus {
   color: #10b981;
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
+
+/* Notification animations */
+@keyframes notif-overlay-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes notif-panel-in-desktop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes notif-panel-in-mobile {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes notif-item-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes notif-badge-pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.notif-overlay-in {
+  animation: notif-overlay-in 0.2s ease forwards;
+}
+
+.notif-panel-in {
+  animation: notif-panel-in-desktop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (max-width: 639px) {
+  .notif-panel-in {
+    animation: notif-panel-in-mobile 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+.notif-item-in {
+  animation: notif-item-in 0.2s ease forwards;
+  opacity: 0;
+}
+
+.notif-badge {
+  animation: notif-badge-pulse 2s ease-in-out infinite;
+}

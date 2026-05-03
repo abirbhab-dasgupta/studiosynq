@@ -33,7 +33,14 @@ export async function POST(
         .limit(1);
 
     if (existing.length) {
-        return Response.json({ token: existing[0].token, mode: existing[0].mode });
+        // Update mode if it changed
+        if (existing[0].mode !== mode) {
+            await db
+                .update(roomInvites)
+                .set({ mode })
+                .where(eq(roomInvites.id, existing[0].id));
+        }
+        return Response.json({ token: existing[0].token, mode });
     }
 
     // Generate a unique token — 32 random characters

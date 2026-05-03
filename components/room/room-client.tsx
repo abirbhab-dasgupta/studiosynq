@@ -77,10 +77,76 @@ export function RoomClient({ roomId, user }: Props) {
         );
     }
 
-    if (!room || (room as any).error) {
+    if (!room) {
         return (
-            <div className="flex-1 flex items-center justify-center text-[14px] text-var(--text-2)">
-                Room not found.
+            <div style={{
+                flex: 1, display: "flex", alignItems: "center",
+                justifyContent: "center",
+            }}>
+                <p style={{ fontSize: 14, color: "var(--text-2)" }}>Loading...</p>
+            </div>
+        );
+    }
+
+    if ((room as any).error === "You do not have access to this room") {
+        return (
+            <div style={{
+                flex: 1, display: "flex", flexDirection: "column", marginTop: 100,
+                alignItems: "center", justifyContent: "center", gap: 16,
+            }}>
+                <div style={{
+                    width: 48, height: 48, borderRadius: 14,
+                    background: "rgba(239,68,68,0.08)",
+                    border: "1px solid rgba(239,68,68,0.2)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                    <svg width={20} height={20} viewBox="0 0 24 24" fill="none"
+                        stroke="#ef4444" strokeWidth="1.6"
+                        strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                    <p style={{
+                        fontSize: 15, fontWeight: 500,
+                        color: "var(--text)",
+                        fontFamily: "var(--font-sans)",
+                        marginBottom: 6,
+                    }}>
+                        Access denied
+                    </p>
+                    <p style={{
+                        fontSize: 13, color: "var(--text-2)",
+                        fontFamily: "var(--font-sans)",
+                    }}>
+                        You are not a member of this room.
+                    </p>
+                </div>
+                <button
+                    onClick={() => router.push("/rooms")}
+                    style={{
+                        height: 34, padding: "0 16px",
+                        background: "var(--surface)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 8, fontSize: 13,
+                        color: "var(--text-2)", cursor: "pointer",
+                        fontFamily: "var(--font-sans)",
+                    }}
+                >
+                    Back to rooms
+                </button>
+            </div>
+        );
+    }
+
+    if ((room as any).error) {
+        return (
+            <div style={{
+                flex: 1, display: "flex", alignItems: "center",
+                justifyContent: "center",
+            }}>
+                <p style={{ fontSize: 14, color: "var(--text-2)" }}>Room not found.</p>
             </div>
         );
     }

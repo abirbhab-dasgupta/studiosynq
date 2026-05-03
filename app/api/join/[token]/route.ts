@@ -77,7 +77,7 @@ export async function POST(
         return Response.json({ status: "already_member", roomId });
     }
 
-    // Auto join mode — add directly to room
+    // Auto join
     if (invite[0].mode === "auto") {
         await db.insert(roomMembers).values({
             id: crypto.randomUUID(),
@@ -87,7 +87,7 @@ export async function POST(
         return Response.json({ status: "joined", roomId });
     }
 
-    // Request mode — check if already requested
+    // Check existing request
     const existingRequest = await db
         .select()
         .from(roomJoinRequests)
@@ -98,13 +98,31 @@ export async function POST(
         .limit(1);
 
     if (existingRequest.length) {
-        return Response.json({
-            status: existingRequest[0].status,
-            roomId,
-        });
+        const reqStatus = existingRequest[0].status;
+
+        // Previously approved but not in room — add them
+        if (reqStatus === "approved") {
+            await db.insert(roomMembers).values({
+                id: crypto.randomUUID(),
+                roomId,
+                userId: session.user.id,
+            });
+            return Response.json({ status: "joined", roomId });
+        }
+
+        // Previously rejected — delete stale request, let them request again
+        if (reqStatus === "rejected") {
+            await db
+                .delete(roomJoinRequests)
+                .where(eq(roomJoinRequests.id, existingRequest[0].id));
+            // Falls through to create a new request below
+        } else {
+            // Still pending
+            return Response.json({ status: "pending", roomId });
+        }
     }
 
-    // Create join request
+    // Create new join request
     await db.insert(roomJoinRequests).values({
         id: crypto.randomUUID(),
         roomId,
