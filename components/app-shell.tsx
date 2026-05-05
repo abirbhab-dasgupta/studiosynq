@@ -20,11 +20,11 @@ const navItems = [
 ];
 
 const agents = [
-    { name: "CodeBuddy", icon: P.code, accent: "#10b981" },
-    { name: "ClarityAgent", icon: P.chat, accent: "#6366f1" },
-    { name: "ResearchBot", icon: P.search, accent: "#D97706" },
-    { name: "DesignExpert", icon: P.star, accent: "#ec4899" },
-    { name: "DocWriter", icon: P.book, accent: "#3b82f6" },
+    { name: "CodeBuddy", slug: "codebuddy", icon: P.code, accent: "#10b981" },
+    { name: "ClarityAgent", slug: "clarityagent", icon: P.chat, accent: "#6366f1" },
+    { name: "ResearchBot", slug: "researchbot", icon: P.search, accent: "#D97706" },
+    { name: "DesignExpert", slug: "designexpert", icon: P.star, accent: "#ec4899" },
+    { name: "DocWriter", slug: "docwriter", icon: P.book, accent: "#3b82f6" },
 ];
 
 type Props = {
@@ -113,7 +113,7 @@ export function AppShell({ user, children }: Props) {
                             Sign out?
                         </p>
                         <p style={s({ fontSize: 12, color: "var(--text-2)", lineHeight: 1.5, marginBottom: 8 })}>
-                            You'll be signed out of your workspace.
+                            You&apos;ll be signed out of your workspace.
                         </p>
                         <div style={{ display: "flex", gap: 8 }}>
                             <button
@@ -233,20 +233,31 @@ export function AppShell({ user, children }: Props) {
                         padding: "0 8px 8px", marginTop: 14,
                     })}>Agents</div>
 
-                    {agents.map(ag => (
-                        <button key={ag.name} style={s({
-                            display: "flex", alignItems: "center", gap: 8,
-                            padding: "6px 8px", borderRadius: 8,
-                            width: "100%", textAlign: "left",
-                            fontSize: 13, fontWeight: 400,
-                            fontFamily: "var(--font-sans)",
-                            color: "var(--text-2)", background: "transparent",
-                            border: "none", cursor: "pointer", transition: "all .15s",
-                        })}>
-                            <Ico d={ag.icon} size={12} stroke={ag.accent} />
-                            <span style={{ flex: 1 }}>{ag.name}</span>
-                        </button>
-                    ))}
+                    {agents.map(ag => {
+                        const agentActive = pathname.startsWith(`/agents/${ag.slug}`);
+                        return (
+                            <button
+                                key={ag.name}
+                                onClick={() => {
+                                    router.push(`/agents/${ag.slug}`);
+                                    setSidebarOpen(false);
+                                }}
+                                style={s({
+                                    display: "flex", alignItems: "center", gap: 8,
+                                    padding: "6px 8px", borderRadius: 8,
+                                    width: "100%", textAlign: "left",
+                                    fontSize: 13, fontWeight: agentActive ? 500 : 400,
+                                    fontFamily: "var(--font-sans)",
+                                    color: agentActive ? "var(--text)" : "var(--text-2)",
+                                    background: agentActive ? "var(--surface-h)" : "transparent",
+                                    border: "none", cursor: "pointer",
+                                    transition: "all .15s",
+                                })}>
+                                <Ico d={ag.icon} size={12} stroke={ag.accent} />
+                                <span style={{ flex: 1 }}>{ag.name}</span>
+                            </button>
+                        );
+                    })}
                 </nav>
 
                 {/* User + sign out */}
@@ -360,10 +371,8 @@ export function AppShell({ user, children }: Props) {
                         display: "flex", alignItems: "center",
                         gap: 8, marginLeft: "auto",
                     })}>
-                        {/* Notification bell */}
                         <NotificationBell T={T} />
 
-                        {/* Theme toggle */}
                         <button
                             onClick={() => setTheme(t => t === "dark" ? "light" : "dark")}
                             style={s({
