@@ -315,14 +315,6 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
                     </div>
 
                     <div className="agent-header-actions">
-                        {isResearch && webUsed && (
-                            <span
-                                className="agent-badge"
-                                style={{ background: "#D9770614", color: "#D97706", border: "1px solid #D9770630" }}
-                            >
-                                🌐 Web
-                            </span>
-                        )}
                         {sessionContext?.roomName && (
                             <span
                                 className="agent-badge"
