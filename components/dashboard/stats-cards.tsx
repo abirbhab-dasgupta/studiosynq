@@ -21,6 +21,8 @@ export function StatsCards({ T, userId, isMobile }: Props) {
     const { data } = useQuery({
         queryKey: ["stats", userId],
         queryFn: () => fetch(`/api/stats/${userId}`).then(r => r.json()),
+        staleTime: 0,        // always refetch on mount
+        refetchInterval: 30_000, // refresh every 30s
     });
 
     return (

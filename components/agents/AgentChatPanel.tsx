@@ -6,18 +6,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { ALL_MODELS, DEFAULT_MODEL_ID, type ModelId, type ModelOption } from "@/lib/agents/llm-router";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
 type Message = { role: "user" | "assistant"; content: string; id: string };
-
-type ChatSession = {
-    id: string;
-    title: string;
-    messages: Message[];
-    createdAt: number;
-    updatedAt: number;
-};
+type ChatSession = { id: string; title: string; messages: Message[]; createdAt: number; updatedAt: number };
 
 interface Props {
     agentName: string;
@@ -46,6 +40,7 @@ const PLACEHOLDERS: Record<string, string> = {
 
 const lsKey = (a: string) => `studiosynq:agent:${a}:sessions`;
 const lsActive = (a: string) => `studiosynq:agent:${a}:active`;
+const lsModel = (a: string) => `studiosynq:agent:${a}:model`;
 
 function readSessions(a: string): ChatSession[] {
     if (typeof window === "undefined") return [];
@@ -60,6 +55,14 @@ function readActiveId(a: string): string | null {
 }
 function writeActiveId(a: string, id: string) {
     try { localStorage.setItem(lsActive(a), id); } catch { /* quota */ }
+}
+function readModel(a: string): ModelId {
+    if (typeof window === "undefined") return DEFAULT_MODEL_ID;
+    const v = localStorage.getItem(lsModel(a));
+    return (ALL_MODELS.find(m => m.id === v)?.id ?? DEFAULT_MODEL_ID);
+}
+function writeModel(a: string, id: ModelId) {
+    try { localStorage.setItem(lsModel(a), id); } catch { /* quota */ }
 }
 function makeSession(): ChatSession {
     return { id: crypto.randomUUID(), title: "New chat", messages: [], createdAt: Date.now(), updatedAt: Date.now() };
@@ -76,15 +79,18 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
     const meta = AGENT_META[agentName] ?? { accent: "#10b981", label: agentName, tagline: "", symbol: "●" };
     const isResearch = agentName === "researchbot";
 
-    // sessions
     const [sessions, setSessions] = useState<ChatSession[]>([]);
     const [activeId, setActiveId] = useState("");
     const [histOpen, setHistOpen] = useState(false);
+    const [modelOpen, setModelOpen] = useState(false);
+    const [modelId, setModelId] = useState<ModelId>(DEFAULT_MODEL_ID);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         const stored = readSessions(agentName);
         const aid = readActiveId(agentName);
+        const mid = readModel(agentName);
+        setModelId(mid);
         if (stored.length === 0) {
             const s = makeSession();
             setSessions([s]); setActiveId(s.id);
@@ -97,6 +103,7 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
     }, [agentName]);
 
     const activeSession = sessions.find(s => s.id === activeId) ?? null;
+    const currentModel = ALL_MODELS.find(m => m.id === modelId) ?? ALL_MODELS[2];
 
     function patchSession(id: string, fn: (s: ChatSession) => ChatSession) {
         setSessions(prev => {
@@ -104,6 +111,10 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
             writeSessions(agentName, next);
             return next;
         });
+    }
+
+    function selectModel(id: ModelId) {
+        setModelId(id); writeModel(agentName, id); setModelOpen(false);
     }
 
     function newChat() {
@@ -134,7 +145,6 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
     }
 
     // ── ResearchBot ──────────────────────────────────────────────────────────
-
     const [resInput, setResInput] = useState("");
     const [resLoading, setResLoading] = useState(false);
     const [resError, setResError] = useState<string | null>(null);
@@ -158,7 +168,7 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
             const history = activeSession.messages.map(m => ({ role: m.role, content: m.content }));
             const res = await fetch(`/api/agents/${agentName}`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: msg, history }),
+                body: JSON.stringify({ message: msg, history, modelId }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error ?? "Request failed");
@@ -173,14 +183,13 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
     }
 
     // ── Streaming ────────────────────────────────────────────────────────────
-
     const [chatInput, setChatInput] = useState("");
 
     const { messages: sdkMsgs, sendMessage, status, error, setMessages } = useChat({
         transport: new DefaultChatTransport({
             api: `/api/agents/${agentName}`,
             prepareSendMessagesRequest({ messages }) {
-                return { body: { messages, ...(sessionContext ?? {}) } };
+                return { body: { messages, modelId, ...(sessionContext ?? {}) } };
             },
         }),
     });
@@ -196,7 +205,6 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
         id: m.id,
     }));
 
-    // persist when done streaming
     useEffect(() => {
         if (isStreaming || !activeId || isResearch || chatMsgs.length === 0) return;
         patchSession(activeId, s => ({
@@ -207,7 +215,6 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isStreaming, chatMsgs.length]);
 
-    // restore when switching sessions
     useEffect(() => {
         if (isResearch || !activeSession || !mounted) return;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,7 +239,6 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
         }
     }
 
-    // unified
     const msgs = isResearch ? resMessages : chatMsgs;
     const loading = isResearch ? resLoading : isStreaming;
     const errMsg = isResearch ? resError : (error?.message ?? null);
@@ -240,9 +246,7 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
     const bottomRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [msgs.length, loading]);
+    useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs.length, loading]);
 
     function autoResize(el: HTMLTextAreaElement | null) {
         if (!el) return;
@@ -255,6 +259,16 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
         isResearch ? setResInput(v) : setChatInput(v);
     }, [isResearch]);
 
+    // Close dropdowns on outside click
+    const modelRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        function handler(e: MouseEvent) {
+            if (modelRef.current && !modelRef.current.contains(e.target as Node)) setModelOpen(false);
+        }
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
     if (!mounted) return null;
 
     return (
@@ -264,48 +278,31 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
             <aside className={`agent-sidebar${histOpen ? " open" : ""}`}>
                 <div className="agent-sidebar-head">
                     <span className="agent-sidebar-label">History</span>
-                    <button
-                        className="agent-sidebar-new"
+                    <button className="agent-sidebar-new"
                         style={{ background: meta.accent + "20", color: meta.accent }}
-                        onClick={newChat}
-                    >
-                        + New
-                    </button>
+                        onClick={newChat}>+ New</button>
                 </div>
                 <div className="agent-sidebar-list">
                     {[...sessions].reverse().map(s => (
-                        <div
-                            key={s.id}
-                            className={`agent-session-item${s.id === activeId ? " active" : ""}`}
-                            onClick={() => pickSession(s.id)}
-                        >
+                        <div key={s.id} className={`agent-session-item${s.id === activeId ? " active" : ""}`}
+                            onClick={() => pickSession(s.id)}>
                             <span className="agent-session-title">{s.title}</span>
-                            <button
-                                className="agent-session-del"
-                                onClick={e => { e.stopPropagation(); dropSession(s.id); }}
-                            >✕</button>
+                            <button className="agent-session-del"
+                                onClick={e => { e.stopPropagation(); dropSession(s.id); }}>✕</button>
                         </div>
                     ))}
                 </div>
             </aside>
 
-            {/* ── Main column ── */}
+            {/* ── Main ── */}
             <div className="agent-main">
 
                 {/* Header */}
                 <div className="agent-header">
-                    <button
-                        className={`agent-header-toggle${histOpen ? " active" : ""}`}
-                        onClick={() => setHistOpen(v => !v)}
-                        title="Chat history"
-                    >
-                        ☰
-                    </button>
+                    <button className={`agent-header-toggle${histOpen ? " active" : ""}`}
+                        onClick={() => setHistOpen(v => !v)} title="Chat history">☰</button>
 
-                    <div
-                        className="agent-header-icon"
-                        style={{ background: meta.accent + "18", color: meta.accent }}
-                    >
+                    <div className="agent-header-icon" style={{ background: meta.accent + "18", color: meta.accent }}>
                         {meta.symbol}
                     </div>
 
@@ -315,14 +312,62 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
                     </div>
 
                     <div className="agent-header-actions">
-                        {sessionContext?.roomName && (
-                            <span
-                                className="agent-badge"
-                                style={{ background: meta.accent + "14", color: meta.accent, border: `1px solid ${meta.accent}30` }}
-                            >
-                                {sessionContext.roomName}
+                        {isResearch && webUsed && (
+                            <span className="agent-badge"
+                                style={{ background: "#D9770614", color: "#D97706", border: "1px solid #D9770630" }}>
+                                🌐 Web
                             </span>
                         )}
+
+                        {/* Model picker */}
+                        <div className="agent-model-picker" ref={modelRef}>
+                            <button
+                                className="agent-model-trigger"
+                                onClick={() => setModelOpen(v => !v)}
+                                title="Choose model"
+                            >
+                                <span
+                                    className="agent-model-dot"
+                                    style={{ background: currentModel.badgeColor }}
+                                />
+                                <span className="agent-model-name">{currentModel.label}</span>
+                                <span className="agent-model-caret">▾</span>
+                            </button>
+
+                            {modelOpen && (
+                                <div className="agent-model-dropdown">
+                                    <div className="agent-model-dropdown-head">Choose model</div>
+                                    {(["groq", "gemini", "mistral"] as const).map(provider => {
+                                        const providerModels = ALL_MODELS.filter(m => m.provider === provider);
+                                        const meta = providerModels[0];
+                                        return (
+                                            <div key={provider}>
+                                                <div className="agent-model-provider-label" style={{ color: meta.providerColor }}>
+                                                    {meta.providerLabel}
+                                                </div>
+                                                {providerModels.map((m: ModelOption) => (
+                                                    <button
+                                                        key={m.id}
+                                                        className={`agent-model-option${m.id === modelId ? " selected" : ""}`}
+                                                        onClick={() => selectModel(m.id)}
+                                                    >
+                                                        <div className="agent-model-option-top">
+                                                            <span className="agent-model-option-label">{m.label}</span>
+                                                            <span
+                                                                className="agent-model-option-badge"
+                                                                style={{ background: m.badgeColor + "20", color: m.badgeColor }}
+                                                            >{m.badge}</span>
+                                                        </div>
+                                                        <div className="agent-model-option-desc">{m.description}</div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+
                         <button className="agent-new-btn" onClick={newChat}>
                             + <span>New chat</span>
                         </button>
@@ -333,9 +378,7 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
                 <div className="agent-messages">
                     {msgs.length === 0 && (
                         <div className="agent-empty">
-                            <div className="agent-empty-symbol" style={{ color: meta.accent }}>
-                                {meta.symbol}
-                            </div>
+                            <div className="agent-empty-symbol" style={{ color: meta.accent }}>{meta.symbol}</div>
                             <div className="agent-empty-title">Ask {meta.label} anything</div>
                             <div className="agent-empty-sub">{meta.tagline}</div>
                             <div className="agent-empty-hint">
@@ -349,13 +392,11 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
 
                     {msgs.map((msg: Message) => (
                         <div key={msg.id} className={`agent-msg-row ${msg.role}`}>
-                            <div
-                                className={`agent-msg-bubble ${msg.role}`}
+                            <div className={`agent-msg-bubble ${msg.role}`}
                                 style={msg.role === "user" ? {
                                     background: meta.accent + "1a",
                                     border: `1px solid ${meta.accent}38`,
-                                } : undefined}
-                            >
+                                } : undefined}>
                                 {msg.role === "user"
                                     ? <span style={{ whiteSpace: "pre-wrap" }}>{msg.content}</span>
                                     : <MD content={msg.content} accent={meta.accent} />
@@ -385,16 +426,12 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
                     )}
 
                     {errMsg && <div className="agent-error">{errMsg}</div>}
-
                     <div ref={bottomRef} />
                 </div>
 
                 {/* Input */}
                 <div className="agent-input-area">
-                    <form
-                        onSubmit={isResearch ? submitResearch : submitChat}
-                        className="agent-input-box"
-                    >
+                    <form onSubmit={isResearch ? submitResearch : submitChat} className="agent-input-box">
                         <textarea
                             ref={textareaRef}
                             value={inputVal}
@@ -405,23 +442,17 @@ export function AgentChatPanel({ agentName, sessionContext }: Props) {
                             onChange={e => { setInput(e.target.value); autoResize(e.target); }}
                             onKeyDown={onKey}
                         />
-                        <button
-                            type="submit"
-                            disabled={loading || !inputVal.trim()}
+                        <button type="submit" disabled={loading || !inputVal.trim()}
                             className="agent-send-btn"
                             style={{
                                 background: (loading || !inputVal.trim()) ? "var(--surface)" : meta.accent,
                                 color: (loading || !inputVal.trim()) ? "var(--text-3)" : "#fff",
-                            }}
-                        >
-                            ↑
-                        </button>
+                            }}>↑</button>
                     </form>
                     <p className="agent-input-footer">
-                        Groq · Gemini · Mistral — automatic fallback
+                        {currentModel.providerLabel} · {currentModel.label} — auto fallback enabled
                     </p>
                 </div>
-
             </div>
         </div>
     );
@@ -441,11 +472,8 @@ function CopyBtn({ text, accent }: { text: string; accent: string }) {
         setDone(true); setTimeout(() => setDone(false), 2000);
     }
     return (
-        <button
-            className="agent-msg-copy"
-            onClick={copy}
-            style={{ color: done ? accent : "var(--text-3)" }}
-        >
+        <button className="agent-msg-copy" onClick={copy}
+            style={{ color: done ? accent : "var(--text-3)" }}>
             {done ? "✓ Copied" : "Copy"}
         </button>
     );
@@ -457,20 +485,16 @@ function Code({ className, children }: { className?: string; children?: React.Re
     const match = /language-(\w+)/.exec(className || "");
     const str = String(children).replace(/\n$/, "");
     const [done, setDone] = useState(false);
-
     async function copy() {
         await navigator.clipboard.writeText(str);
         setDone(true); setTimeout(() => setDone(false), 2000);
     }
-
     if (!match) return (
         <code style={{ background: "rgba(255,255,255,0.07)", borderRadius: 4, padding: "1px 5px", fontSize: "0.87em", fontFamily: "var(--font-mono)" }}>
             {children}
         </code>
     );
-
     const isAscii = match[1] === "text" || str.includes("■") || str.includes("┌");
-
     return (
         <div style={{ position: "relative", margin: "10px 0" }}>
             {isAscii
@@ -498,9 +522,7 @@ function MD({ content, accent }: { content: string; accent: string }) {
             blockquote({ children }) { return <blockquote style={{ borderLeft: `3px solid ${accent}`, margin: "10px 0", padding: "5px 14px", background: accent + "0d", borderRadius: "0 8px 8px 0" }}>{children}</blockquote>; },
             hr() { return <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "14px 0" }} />; },
             a({ children, href }) { return <a href={href} target="_blank" rel="noreferrer" style={{ color: accent, textDecoration: "underline", textDecorationColor: accent + "60" }}>{children}</a>; },
-        }}>
-            {content}
-        </ReactMarkdown>
+        }}>{content}</ReactMarkdown>
     );
 }
 
