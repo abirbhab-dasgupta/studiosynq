@@ -39,28 +39,6 @@ export default function Hero() {
         }}
       />
 
-      {/* Badge */}
-      <div
-        className="anim-0 relative inline-flex items-center gap-2"
-        style={{
-          padding: "5px 14px",
-          marginBottom: 30,
-          borderRadius: 999,
-          border: "1px solid var(--amber-border)",
-          background: "var(--amber-faint)",
-          color: "var(--amber)",
-          fontSize: 10.5,
-          fontWeight: 500,
-          letterSpacing: "0.065em",
-          textTransform: "uppercase",
-        }}
-      >
-        <span
-          className="pulse-dot shrink-0"
-          style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--amber)", display: "inline-block" }}
-        />
-        Now in open beta
-      </div>
 
       {/* Headline */}
       <h1
@@ -89,10 +67,10 @@ export default function Hero() {
         style={{
           marginTop: 22,
           maxWidth: 460,
-          fontWeight: 300,
+          fontWeight: 200,
           lineHeight: 1.78,
           letterSpacing: "0.005em",
-          fontSize: "clamp(14px, 1.7vw, 17px)",
+          fontSize: "clamp(12px, 1.7vw, 17px)",
           color: "var(--text-2)",
         }}
       >
@@ -146,36 +124,8 @@ export default function Hero() {
         </a>
       </div>
 
-      {/* Social proof */}
-      <div
-        className="anim-4 relative flex items-center gap-3"
-        style={{ marginTop: 44, color: "var(--text-3)", fontSize: 12 }}
-      >
-        {/* Avatar stack */}
-        <div className="flex">
-          {(["AB", "CR", "MK", "+9"] as const).map((init, i) => (
-            <div
-              key={init}
-              className="flex items-center justify-center font-medium rounded-full"
-              style={{
-                width: 24,
-                height: 24,
-                fontSize: i === 3 ? 8 : 9,
-                background: "var(--bg3)",
-                color: "var(--text-2)",
-                border: "2px solid var(--bg)",
-                marginLeft: i === 0 ? 0 : -6,
-              }}
-            >
-              {init}
-            </div>
-          ))}
-        </div>
-        <span>
-          Used by 200+ teams &nbsp;·&nbsp;{" "}
-          <span style={{ color: "var(--amber)" }}>★★★★★</span>
-        </span>
-      </div>
+
+
 
       {/* App preview */}
       <div
