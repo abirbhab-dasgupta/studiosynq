@@ -11,6 +11,7 @@ export const Ico = ({ d, size = 16, stroke = "currentColor" }: {
 
 export const P = {
     home: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10",
+    menu: "M3 12h18 M3 6h18 M3 18h18",
     grid: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
     check: "M9 11l3 3L22 4 M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11",
     shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10",

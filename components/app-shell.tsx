@@ -53,10 +53,6 @@ export function AppShell({ user, children }: Props) {
         return () => window.removeEventListener("resize", check);
     }, []);
 
-    useEffect(() => {
-        const saved = localStorage.getItem("theme") as "dark" | "light" | null;
-        if (saved) setTheme(saved);
-    }, []);
 
     useEffect(() => {
         const html = document.documentElement;

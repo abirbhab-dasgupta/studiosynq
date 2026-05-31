@@ -27,7 +27,7 @@ export async function GET(
     const openTasks = await db
         .select({ count: count() })
         .from(tasks)
-        .where(eq(tasks.userId, uid));
+       .where(eq(tasks.creatorId, uid));
 
     const focusResult = await db
         .select({ total: sum(focusSessions.durationMinutes) })

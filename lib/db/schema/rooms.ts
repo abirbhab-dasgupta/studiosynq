@@ -18,4 +18,4 @@ export const roomMembers = pgTable("room_members", {
 }, (table) => [
     index("room_members_user_id_idx").on(table.userId),
     index("room_members_room_id_idx").on(table.roomId),
-]);
+]); 

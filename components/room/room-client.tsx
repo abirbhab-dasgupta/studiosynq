@@ -25,6 +25,8 @@ type Room = {
     members: Member[];
 };
 
+type RoomResponse = Room & { error?: string };
+
 type Props = {
     roomId: string;
     user: { id: string; name: string; email: string };
@@ -41,9 +43,6 @@ export function RoomClient({ roomId, user }: Props) {
     });
 
     useEffect(() => {
-        const isLight = document.documentElement.classList.contains("light");
-        setTheme(isLight ? "light" : "dark");
-
         const observer = new MutationObserver(() => {
             const isLight = document.documentElement.classList.contains("light");
             setTheme(isLight ? "light" : "dark");
@@ -57,7 +56,7 @@ export function RoomClient({ roomId, user }: Props) {
         return () => observer.disconnect();
     }, []);
 
-    const { data: room, isLoading } = useQuery<Room>({
+    const { data: room, isLoading } = useQuery<RoomResponse>({
         queryKey: ["room", roomId],
         queryFn: () => fetch(`/api/rooms/${roomId}`).then(r => r.json()),
         refetchInterval: 5000,
@@ -71,8 +70,11 @@ export function RoomClient({ roomId, user }: Props) {
 
     if (isLoading) {
         return (
-            <div className="flex-1 flex items-center justify-center text-[14px] text-var(--text-2)">
-                Loading room...
+            <div style={{
+                flex: 1, display: "flex", alignItems: "center",
+                justifyContent: "center",
+            }}>
+                <p style={{ fontSize: 14, color: "var(--text-2)" }}>Loading room...</p>
             </div>
         );
     }
@@ -88,7 +90,7 @@ export function RoomClient({ roomId, user }: Props) {
         );
     }
 
-    if ((room as any).error === "You do not have access to this room") {
+    if (room.error === "You do not have access to this room") {
         return (
             <div style={{
                 flex: 1, display: "flex", flexDirection: "column", marginTop: 100,
@@ -140,7 +142,7 @@ export function RoomClient({ roomId, user }: Props) {
         );
     }
 
-    if ((room as any).error) {
+    if (room.error) {
         return (
             <div style={{
                 flex: 1, display: "flex", alignItems: "center",

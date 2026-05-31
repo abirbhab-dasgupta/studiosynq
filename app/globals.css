@@ -1915,3 +1915,428 @@ textarea:focus {
     width: 260px;
   }
 }
+
+
+/* ══════════════════════════════════════════
+   Task Board — FULL REPLACEMENT BLOCK
+   ══════════════════════════════════════════ */
+
+.task-board-shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.task-board-header {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+/* ── Desktop board ── */
+.task-board-desktop {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.task-board-columns {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 20px 24px 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  align-items: flex-start;
+}
+
+.task-column {
+  flex: 1 1 0;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  height: calc(100vh - 52px - 44px);
+}
+
+.task-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.task-column-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  font-family: var(--font-sans);
+}
+
+.task-column-add-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+  flex-shrink: 0;
+}
+
+.task-column-add-btn:hover {
+  background: var(--surface-h);
+  border-color: var(--border-m);
+}
+
+.task-column-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-column-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  min-height: 80px;
+  margin-top: 4px;
+}
+
+/* ── Mobile board ── */
+.task-board-mobile {
+  display: none;
+}
+
+.task-mobile-column {
+  border-bottom: 1px solid var(--border);
+}
+
+.task-mobile-column:last-child {
+  border-bottom: none;
+}
+
+.task-mobile-column-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: none;
+  cursor: pointer;
+  transition: background .12s;
+  text-align: left;
+}
+
+.task-mobile-column-header:hover {
+  background: var(--surface);
+}
+
+.task-mobile-column-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.task-mobile-column-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 12px 12px;
+  background: var(--bg);
+}
+
+.task-mobile-empty {
+  padding: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--font-sans);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+}
+
+.task-mobile-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 12px 10px;
+  position: relative;
+}
+
+.task-mobile-move-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.task-mobile-move-btn {
+  flex: 1;
+  height: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all .12s;
+  white-space: nowrap;
+}
+
+.task-mobile-move-btn:hover {
+  background: var(--surface-h);
+  border-color: var(--border-m);
+}
+
+.task-mobile-move-btn-primary {
+  background: var(--amber-faint);
+  border-color: var(--amber-border);
+  color: var(--amber);
+}
+
+.task-mobile-move-btn-primary:hover {
+  opacity: 0.85;
+}
+
+/* ── Shared card styles ── */
+.task-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 12px 10px;
+  cursor: default;
+  transition: border-color .15s, box-shadow .15s;
+  position: relative;
+  touch-action: none;
+}
+
+.task-card:hover {
+  border-color: var(--border-m);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.task-drag-handle {
+  cursor: grab;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s;
+  touch-action: none;
+}
+
+.task-drag-handle:hover { background: var(--surface-h); }
+.task-drag-handle:active { cursor: grabbing; }
+
+.task-menu-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .12s;
+}
+
+.task-menu-btn:hover { background: var(--surface-h); }
+
+.task-dropdown {
+  position: absolute;
+  right: 0;
+  top: 26px;
+  z-index: 50;
+  width: 130px;
+  background: var(--bg2);
+  border: 1px solid var(--border-m);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.task-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-sans);
+  text-align: left;
+  transition: background .1s;
+}
+
+.task-dropdown-btn:hover { background: var(--surface); }
+
+.task-card-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+  font-family: var(--font-sans);
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.task-card-desc {
+  font-size: 11.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+  font-family: var(--font-sans);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.task-card-footer { border-top: 1px solid var(--border); }
+
+.task-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+/* ── Modal label ── */
+.task-modal-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+/* ── Tasks room picker ── */
+.tasks-page {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 28px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.tasks-room-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 140px;
+}
+
+.tasks-room-card:hover {
+  border-color: var(--amber-border);
+  background: var(--surface);
+}
+
+.tasks-room-card-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--amber-faint);
+  border: 1px solid var(--amber-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tasks-room-card-owner-badge {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--amber);
+  background: var(--amber-faint);
+  border: 1px solid var(--amber-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+}
+
+.tasks-picker-go-btn {
+  height: 32px;
+  padding: 0 14px;
+  background: var(--amber-faint);
+  border: 1px solid var(--amber-border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--amber);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: opacity .15s;
+}
+
+.tasks-picker-go-btn:hover { opacity: 0.85; }
+
+/* ══════════════════════════════════════════
+   Responsive breakpoints
+   ══════════════════════════════════════════ */
+
+/* Tablet — tighten up columns */
+@media (max-width: 900px) {
+  .task-board-columns { padding: 16px; gap: 10px; }
+  .task-column { min-width: 200px; }
+}
+
+/* Mobile — switch to accordion */
+@media (max-width: 768px) {
+  .task-board-header { padding: 0 16px; height: 48px; }
+
+  /* Hide desktop, show mobile */
+  .task-board-desktop { display: none; }
+  .task-board-mobile {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    background: var(--bg);
+  }
+
+  .tasks-page { padding: 20px 16px 40px; }
+}

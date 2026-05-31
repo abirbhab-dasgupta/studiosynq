@@ -10,6 +10,7 @@ import * as roomInvitesSchema from "./schema/room_invites";
 import * as roomJoinRequestsSchema from "./schema/room_join_requests";
 import * as notificationsSchema from "./schema/notifications";
 
+
 const sql = neon(process.env.DATABASE_URL!);
 
 export const db = drizzle(sql, {
