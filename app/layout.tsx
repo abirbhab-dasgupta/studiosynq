@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/landing/theme-provider";
 import { Providers } from "@/components/providers";
@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   title: "Studiosynq — AI-Powered Co-Working",
   description:
     "One room where AI handles the tedious parts. Five specialized AI agents for developers, designers, and writers — built right into your workspace.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
