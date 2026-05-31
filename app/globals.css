@@ -1917,9 +1917,6 @@ textarea:focus {
 }
 
 
-/* ══════════════════════════════════════════
-   Task Board — FULL REPLACEMENT BLOCK
-   ══════════════════════════════════════════ */
 
 .task-board-shell {
   height: 100%;
@@ -2314,11 +2311,7 @@ textarea:focus {
 
 .tasks-picker-go-btn:hover { opacity: 0.85; }
 
-/* ══════════════════════════════════════════
-   Responsive breakpoints
-   ══════════════════════════════════════════ */
 
-/* Tablet — tighten up columns */
 @media (max-width: 900px) {
   .task-board-columns { padding: 16px; gap: 10px; }
   .task-column { min-width: 200px; }
