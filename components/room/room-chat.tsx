@@ -10,6 +10,7 @@ import { RightPanel } from "./room-panel";
 import { RoomRequests } from "./room-requests";
 import { Ico, P } from "@/components/dashboard/icons";
 import Image from "next/image";
+import { RoomInvite } from "./room-invite";
 
 type Member = {
   userId: string;
@@ -232,25 +233,9 @@ export function RoomChat({ roomId, user }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-          {isOwner && room && (
-            <button
-              onClick={() => router.push(`/rooms/${roomId}`)}
-              style={{
-                height: 28, padding: "0 10px", borderRadius: 7,
-                background: "var(--surface)", border: "1px solid var(--border)",
-                fontSize: 11, fontWeight: 500, color: "var(--text-2)",
-                cursor: "pointer", fontFamily: "var(--font-sans)",
-                display: "flex", alignItems: "center", gap: 5,
-              }}
-            >
-              <svg width={11} height={11} viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-              </svg>
-              Invite
-            </button>
-          )}
+         {isOwner && room && (
+    <RoomInvite roomId={roomId} />
+)}
 
           {!isOwner && (
             <button className="room-leave-btn" onClick={() => setShowLeaveConfirm(true)}>
