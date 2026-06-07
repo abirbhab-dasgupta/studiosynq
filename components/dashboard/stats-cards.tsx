@@ -5,10 +5,10 @@ import { Ico, P } from "./icons";
 import { Theme } from "./tokens";
 
 const STAT_CONFIG = [
-    { label: "Active rooms", icon: P.grid, accent: "#D97706", key: "activeRooms" },
-    { label: "Open tasks", icon: P.check, accent: "#6366f1", key: "openTasks" },
-    { label: "Focus mins", icon: P.shield, accent: "#10b981", key: "focusMinutes" },
-    { label: "Agent runs", icon: P.zap, accent: "#ec4899", key: "agentRuns" },
+    { label: "Active rooms",     icon: P.grid,   accent: "#D97706", key: "activeRooms" },
+    { label: "Tasks",            icon: P.check,  accent: "#6366f1", key: "openTasks"   },
+    { label: "Focus mins today", icon: P.shield, accent: "#10b981", key: "focusMinutes"},
+    { label: "Agent runs",       icon: P.zap,    accent: "#ec4899", key: "agentRuns"   },
 ];
 
 type Props = {
@@ -21,8 +21,8 @@ export function StatsCards({ T, userId, isMobile }: Props) {
     const { data } = useQuery({
         queryKey: ["stats", userId],
         queryFn: () => fetch(`/api/stats/${userId}`).then(r => r.json()),
-        staleTime: 0,        // always refetch on mount
-        refetchInterval: 30_000, // refresh every 30s
+        staleTime: 0,
+        refetchInterval: 30_000,
     });
 
     return (
@@ -52,10 +52,14 @@ export function StatsCards({ T, userId, isMobile }: Props) {
                         fontSize: 32, fontWeight: 500, letterSpacing: "-1.5px",
                         fontFamily: "var(--font-mono)",
                         color: "var(--text)", marginBottom: 5,
-                    }}>{data?.[st.key] ?? "—"}</div>
+                    }}>
+                        {data?.[st.key] ?? "—"}
+                    </div>
                     <div style={{
                         fontSize: 13, color: "var(--text-2)",
-                    }}>{st.label}</div>
+                    }}>
+                        {st.label}
+                    </div>
                 </div>
             ))}
         </div>
