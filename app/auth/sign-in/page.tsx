@@ -44,18 +44,6 @@ function SignInLeft() {
                 Your rooms, tasks, and AI agents are exactly where you left them.
             </LeftSub>
             <AgentList agents={AGENTS} />
-            <div style={{ marginTop: 32 }}>
-                <SocialProof
-                    label={
-                        <>
-                            <strong style={{ color: "var(--text, #EDE8DF)", fontWeight: 500 }}>
-                                200+ teams
-                            </strong>{" "}
-                            collaborating in Studiosynq today
-                        </>
-                    }
-                />
-            </div>
         </>
     );
 }

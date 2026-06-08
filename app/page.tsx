@@ -12,6 +12,7 @@ import HowItWorks from "@/components/landing/how-it-works";
 import Cta from "@/components/landing/cta";
 import Footer from "@/components/landing/footer";
 import ScrollReveal from "@/components/landing/scroll-reveal";
+import LandingLoader from "@/components/landing/landing-loader";
 
 export default function Home() {
   const { data: session, isPending } = useSession();
@@ -24,28 +25,7 @@ export default function Home() {
   }, [isPending, session, router]);
 
   if (isPending) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div
-          style={{
-            width: 32,
-            height: 32,
-            border: "3px solid rgba(255,255,255,0.15)",
-            borderTopColor: "#7c3aed",
-            borderRadius: "50%",
-            animation: "spin 0.7s linear infinite",
-          }}
-        />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+    return <LandingLoader />;
   }
 
   if (session) {
