@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { Ico, P } from "@/components/dashboard/icons";
 
 type Profile = {
@@ -25,7 +24,6 @@ const AVATAR_COLORS = [
 ];
 
 export function ProfileClient({ user }: Props) {
-    const router = useRouter();
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -295,26 +293,7 @@ export function ProfileClient({ user }: Props) {
                     </div>
                 </div>
 
-                {/* Account card */}
-                <div style={{ ...card, display: "flex", flexDirection: "column", gap: 16 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>Account</p>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <div>
-                            <p style={{ fontSize: 13, color: "var(--text-2)" }}>Plan</p>
-                            <p style={{ fontSize: 12, color: "var(--text-3)", fontFamily: "var(--font-mono)" }}>Free</p>
-                        </div>
-                        <span style={{
-                            fontSize: 11, fontWeight: 600,
-                            fontFamily: "var(--font-mono)",
-                            padding: "3px 10px", borderRadius: 999,
-                            background: "var(--amber-faint)",
-                            color: "var(--amber)",
-                            border: "1px solid var(--amber-border)",
-                        }}>
-                            Free plan
-                        </span>
-                    </div>
-                </div>
+                
 
             </div>
         </div>

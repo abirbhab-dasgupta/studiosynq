@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import { Ico, P } from "@/components/dashboard/icons";
 import { DARK, LIGHT } from "@/components/dashboard/tokens";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { SearchBar } from "@/components/dashboard/search-bar";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 
@@ -292,9 +293,6 @@ export function AppShell({ user, children }: Props) {
                                 <div style={s({
                                     fontSize: 12, fontWeight: 500, color: "var(--text)",
                                 })}>{user.name}</div>
-                                <div style={s({
-                                    fontSize: 10, color: "var(--text-3)",
-                                })}>Free plan</div>
                             </div>
                         </div>
                     </div>
@@ -340,28 +338,7 @@ export function AppShell({ user, children }: Props) {
                         </button>
                     )}
 
-                    {!isMobile && (
-                        <div style={s({ position: "relative", flex: 1, maxWidth: 260 })}>
-                            <span style={s({
-                                position: "absolute", left: 10, top: "50%",
-                                transform: "translateY(-50%)", pointerEvents: "none",
-                            })}>
-                                <Ico d={P.search} size={13} stroke="var(--text-3)" />
-                            </span>
-                            <input
-                                type="text"
-                                placeholder="Search workspace…"
-                                style={{
-                                    width: "100%", height: 32,
-                                    background: "var(--surface)",
-                                    border: "1px solid var(--border)",
-                                    borderRadius: 8, padding: "0 10px 0 30px",
-                                    fontSize: 13, color: "var(--text)",
-                                    fontFamily: "var(--font-sans)", outline: "none",
-                                }}
-                            />
-                        </div>
-                    )}
+                    {!isMobile && <SearchBar />}
 
                     <div style={s({
                         display: "flex", alignItems: "center",

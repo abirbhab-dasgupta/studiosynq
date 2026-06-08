@@ -80,7 +80,7 @@ export function Sidebar({ T, activeNav, setActiveNav, user }: Props) {
                             fontSize: 12, color: T.text2, lineHeight: 1.5,
                             fontFamily: "'DM Sans',sans-serif", marginBottom: 8,
                         })}>
-                            You'll be signed out of your workspace. Any unsaved progress will be lost.
+                            You&apos;ll be signed out of your workspace. Any unsaved progress will be lost.
                         </div>
 
                         {/* Action buttons */}
@@ -210,7 +210,7 @@ export function Sidebar({ T, activeNav, setActiveNav, user }: Props) {
                             <div style={s({ fontSize: 12, fontWeight: 500, color: T.text })}>
                                 {user?.name ?? "User"}
                             </div>
-                            <div style={s({ fontSize: 10, color: T.text3 })}>Free plan</div>
+                           
                         </div>
                     </div>
 
