@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/neon-http";
 import * as authSchema from "./schema/auth";
 import * as roomsSchema from "./schema/rooms";
 import * as tasksSchema from "./schema/tasks";
-import * as sessionsSchema from "./schema/sessions";
+import * as sessionsSchema from "./schema/focus";
 import * as agentLogsSchema from "./schema/agent_logs";
 import * as messagesSchema from "./schema/messages";
 import * as roomInvitesSchema from "./schema/room_invites";
@@ -31,7 +31,7 @@ export const db = drizzle(sql, {
 export * from "./schema/auth";
 export * from "./schema/rooms";
 export * from "./schema/tasks";
-export * from "./schema/sessions";
+export * from "./schema/focus";
 export * from "./schema/agent_logs";
 export * from "./schema/messages";
 export * from "./schema/room_invites";
