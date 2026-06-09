@@ -8,18 +8,18 @@ const FEATURES = [
   },
   {
     num: "02",
-    title: "AI-powered Kanban board",
-    desc: "ClarityAgent auto-generates task breakdowns from a single description and drops them straight into your board.",
+    title: "Invite your team, instantly",
+    desc: "Share a link, and collaborators are in the room. No admin setup, no seat configuration.",
   },
   {
     num: "03",
-    title: "Focus timer, built in",
-    desc: "Pomodoro-style focus sessions with per-room analytics. Know exactly where your time goes.",
+    title: "Kanban board, built in",
+    desc: "Create, assign, and drag tasks across columns — all inside your workspace. No separate tool, no context switching.",
   },
   {
     num: "04",
-    title: "One auth, one database",
-    desc: "BetterAuth + Drizzle on Neon Postgres — everything connected, nothing to manage separately.",
+    title: "Focus timer, built in",
+    desc: "Pomodoro-style focus sessions per room. Know exactly where your time goes without leaving your workspace.",
   },
 ];
 

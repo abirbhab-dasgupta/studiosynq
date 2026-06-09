@@ -347,7 +347,7 @@ export function FocusTimer({
     broadcastState(false, m.type);
   };
 
-  const focusingCount = members.filter(m => m.focusing).length + 1;
+  const focusingCount = members.filter(m => m.focusing).length + (isRunning ? 1 : 0);
   const color         = ringColor(mode);
 
   return (
@@ -363,7 +363,7 @@ export function FocusTimer({
         <div className="focus-live-pill-inline">
           <span className="focus-live-dot" style={{ background: isRunning ? "var(--amber)" : "var(--text-3)", boxShadow: isRunning ? "0 0 6px var(--amber)" : "none" }} />
           <span className="focus-live-label">{isRunning ? "Live" : "Idle"}</span>
-          {focusingCount > 0 && <span className="focus-focusing-count">{focusingCount} focusing</span>}
+          {focusingCount > 0 ? <span className="focus-focusing-count">{focusingCount} focusing</span> : null}
         </div>
       </div>
 

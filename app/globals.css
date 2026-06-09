@@ -3719,3 +3719,221 @@ textarea:focus {
   .focus-how-step:last-child::after { display: none; }
 }
  
+/* ══════════════════════════════════════════
+   Member Profile Modal
+   ══════════════════════════════════════════ */
+
+@keyframes memberModalIn {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes memberDotPulse {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1;   }
+}
+
+.member-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.member-modal-panel {
+  position: fixed;
+  z-index: 90;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100vw - 32px);
+  max-width: 340px;
+  background: var(--bg2);
+  border: 1px solid var(--border-m);
+  border-radius: 18px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  animation: memberModalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Close button */
+.member-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.member-modal-close:hover {
+  background: var(--surface-h);
+  color: var(--text-2);
+}
+
+/* Loading */
+.member-modal-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 52px 24px;
+}
+
+.member-modal-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+  animation: memberDotPulse 1.2s ease-in-out infinite;
+}
+
+/* Error */
+.member-modal-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.member-modal-error-title {
+  font-size: 14px;
+  color: var(--text-2);
+  font-family: var(--font-sans);
+}
+
+.member-modal-error-sub {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--font-sans);
+}
+
+/* Banner */
+.member-modal-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px 20px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+
+.member-modal-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-m);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.member-modal-avatar-fallback {
+  background: var(--amber);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  font-family: var(--font-sans);
+  border: 2px solid var(--amber-border);
+}
+
+.member-modal-name {
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--font-sans);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.member-modal-username {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+/* Body */
+.member-modal-body {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px 20px;
+  gap: 0;
+}
+
+.member-modal-no-bio {
+  font-size: 13px;
+  color: var(--text-3);
+  font-family: var(--font-sans);
+  font-style: italic;
+  padding: 4px 0 8px;
+}
+
+.member-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 0;
+}
+
+.member-modal-field-bordered {
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+
+.member-modal-field-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.member-modal-field-value {
+  font-size: 13px;
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+}
+
+.member-modal-field-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .member-modal-panel {
+    width: calc(100vw - 24px);
+    border-radius: 14px;
+  }
+
+  .member-modal-banner {
+    padding: 28px 20px 16px;
+  }
+
+  .member-modal-avatar {
+    width: 56px;
+    height: 56px;
+  }
+}

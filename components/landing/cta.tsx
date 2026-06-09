@@ -62,7 +62,7 @@ export default function Cta() {
         style={{ gap: 12 }}
       >
         <a
-          href="#"
+          href="/auth/sign-up"
           className="inline-flex items-center gap-2 font-medium transition-all duration-200 no-underline bg-(--amber) text-white hover:opacity-85"
           style={{
             padding: "11px 26px",
@@ -72,17 +72,6 @@ export default function Cta() {
           }}
         >
           Start free — no card needed →
-        </a>
-        <a
-          href="#"
-          className="inline-flex items-center gap-2 font-normal transition-all duration-200 no-underline backdrop-blur border border-(--border) bg-(--surface) text-(--text-2) hover:border-(--border-m) hover:text-(--text)"
-          style={{
-            padding: "11px 22px",
-            borderRadius: 999,
-            fontSize: 14,
-          }}
-        >
-          Read the docs
         </a>
       </div>
     </section>
