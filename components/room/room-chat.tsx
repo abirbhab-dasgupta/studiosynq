@@ -4,6 +4,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import PusherClient from "pusher-js";
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useChatMessages, useSendMessage } from "@/hooks/useChatMessages";
 import type { ChatMessage } from "@/hooks/useChatMessages";
 import { RightPanel } from "./room-panel";
@@ -54,6 +57,111 @@ function formatDate(iso: string) {
   return d.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
+// ── Agent markdown renderer ───────────────────────────────────────────────────
+
+function AgentMarkdown({ content, accent }: { content: string; accent: string }) {
+  return (
+    <ReactMarkdown
+      components={{
+        code({ className, children }) {
+          const match = /language-(\w+)/.exec(className || "");
+          const str = String(children).replace(/\n$/, "");
+          if (!match) {
+            return (
+              <code style={{
+                background: "rgba(255,255,255,0.07)",
+                borderRadius: 4,
+                padding: "1px 5px",
+                fontSize: "0.87em",
+                fontFamily: "var(--font-mono)",
+              }}>
+                {children}
+              </code>
+            );
+          }
+          return (
+            <div style={{ position: "relative", margin: "8px 0" }}>
+              <SyntaxHighlighter
+                style={oneDark}
+                language={match[1]}
+                PreTag="div"
+                customStyle={{
+                  borderRadius: 8, fontSize: 12, margin: 0,
+                  border: "1px solid rgba(255,255,255,0.07)",
+                }}
+              >
+                {str}
+              </SyntaxHighlighter>
+            </div>
+          );
+        },
+        h2({ children }) {
+          return (
+            <h2 style={{
+              fontSize: 13, fontWeight: 700, color: accent,
+              margin: "14px 0 5px",
+              borderBottom: `1px solid ${accent}28`, paddingBottom: 4,
+            }}>
+              {children}
+            </h2>
+          );
+        },
+        h3({ children }) {
+          return (
+            <h3 style={{ fontSize: 12.5, fontWeight: 600, margin: "10px 0 3px", color: "var(--text)" }}>
+              {children}
+            </h3>
+          );
+        },
+        p({ children }) {
+          return <p style={{ margin: "5px 0", lineHeight: 1.65, fontSize: 13 }}>{children}</p>;
+        },
+        ul({ children }) {
+          return <ul style={{ margin: "5px 0", paddingLeft: 18 }}>{children}</ul>;
+        },
+        ol({ children }) {
+          return <ol style={{ margin: "5px 0", paddingLeft: 18 }}>{children}</ol>;
+        },
+        li({ children }) {
+          return <li style={{ margin: "3px 0", fontSize: 13 }}>{children}</li>;
+        },
+        strong({ children }) {
+          return <strong style={{ color: accent, fontWeight: 600 }}>{children}</strong>;
+        },
+        hr() {
+          return <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "10px 0" }} />;
+        },
+        blockquote({ children }) {
+          return (
+            <blockquote style={{
+              borderLeft: `3px solid ${accent}`,
+              margin: "8px 0", padding: "4px 12px",
+              background: accent + "0d",
+              borderRadius: "0 6px 6px 0",
+            }}>
+              {children}
+            </blockquote>
+          );
+        },
+        a({ children, href }) {
+          return (
+            <a href={href} target="_blank" rel="noreferrer" style={{
+              color: accent, textDecoration: "underline",
+              textDecorationColor: accent + "60",
+            }}>
+              {children}
+            </a>
+          );
+        },
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 export function RoomChat({ roomId, user }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -75,17 +183,16 @@ export function RoomChat({ roomId, user }: Props) {
   const sendMessage = useSendMessage(roomId);
 
   const [panelOpen, setPanelOpen] = useState(() => {
-  if (typeof window === "undefined") return false;
-  return window.innerWidth >= 768;
-});
+    if (typeof window === "undefined") return false;
+    return window.innerWidth >= 768;
+  });
 
-  // Pusher real-time subscription
   useEffect(() => {
-    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
+    const pusherKey     = process.env.NEXT_PUBLIC_PUSHER_KEY;
     const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
     if (!pusherKey || !pusherCluster) return;
 
-    const pusher = new PusherClient(pusherKey, { cluster: pusherCluster });
+    const pusher  = new PusherClient(pusherKey, { cluster: pusherCluster });
     const channel = pusher.subscribe(`room-${roomId}`);
 
     channel.bind("new-message", (data: ChatMessage) => {
@@ -124,7 +231,7 @@ export function RoomChat({ roomId, user }: Props) {
     });
     inputRef.current?.focus();
     if (window.innerWidth < 768) setPanelOpen(false);
-}, [setPanelOpen]);
+  }, [setPanelOpen]);
 
   async function handleSend() {
     const content = input.trim();
@@ -233,9 +340,7 @@ export function RoomChat({ roomId, user }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-         {isOwner && room && (
-    <RoomInvite roomId={roomId} />
-)}
+          {isOwner && room && <RoomInvite roomId={roomId} />}
 
           {!isOwner && (
             <button className="room-leave-btn" onClick={() => setShowLeaveConfirm(true)}>
@@ -268,12 +373,10 @@ export function RoomChat({ roomId, user }: Props) {
         </div>
       </div>
 
-      {/* Join requests — owner only */}
       {isOwner && <RoomRequests roomId={roomId} />}
 
       {/* Body */}
       <div className="room-chat-body">
-        {/* Messages */}
         <div className="room-chat-messages">
           {messagesLoading ? (
             <div className="room-chat-empty">
@@ -371,12 +474,10 @@ export function RoomChat({ roomId, user }: Props) {
           </p>
         </div>
 
-        {/* Mobile backdrop */}
         {panelOpen && (
           <div className="room-panel-backdrop" onClick={() => setPanelOpen(false)} />
         )}
 
-        {/* Right panel */}
         {panelOpen && (
           <RightPanel
             roomId={roomId}
@@ -393,6 +494,8 @@ export function RoomChat({ roomId, user }: Props) {
   );
 }
 
+// ── MessageRow ────────────────────────────────────────────────────────────────
+
 function MessageRow({
   msg, members, currentUserId,
 }: {
@@ -401,18 +504,15 @@ function MessageRow({
   currentUserId: string;
 }) {
   const isAgent = !!msg.agentName;
-  const isMe = msg.userId === currentUserId && !isAgent;
-  const member = members.find((m) => m.userId === msg.userId);
+  const isMe    = msg.userId === currentUserId && !isAgent;
+  const member  = members.find((m) => m.userId === msg.userId);
   const agentConfig = msg.agentName ? AGENT_CONFIG[msg.agentName] : null;
 
   const displayName = isAgent
     ? (agentConfig?.label ?? msg.agentName ?? "Agent")
     : (msg.senderName ?? member?.name ?? "Unknown");
 
-  const avatarColor = isAgent
-    ? (agentConfig?.color ?? "#D97706")
-    : (member?.avatarColor ?? "var(--amber-faint)");
-
+  const avatarColor   = isAgent ? (agentConfig?.color ?? "#D97706") : (member?.avatarColor ?? "var(--amber-faint)");
   const avatarInitial = displayName.charAt(0).toUpperCase();
 
   return (
@@ -474,9 +574,18 @@ function MessageRow({
               {formatTime(msg.createdAt)}
             </span>
           )}
-          <p style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-            {msg.content}
-          </p>
+
+          {/* ── Agent responses get markdown, user messages get plain text ── */}
+          {isAgent ? (
+            <AgentMarkdown
+              content={msg.content}
+              accent={agentConfig?.color ?? "var(--amber)"}
+            />
+          ) : (
+            <p style={{ fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              {msg.content}
+            </p>
+          )}
         </div>
       </div>
     </div>
