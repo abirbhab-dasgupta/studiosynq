@@ -9,7 +9,7 @@ const AGENT_CONFIG: Record<string, { label: string; color: string }> = {
     clarityagent: { label: "ClarityAgent", color: "#6366f1" },
     researchbot:  { label: "ResearchBot",  color: "#D97706" },
     designexpert: { label: "DesignExpert", color: "#ec4899" },
-    docwriter:    { label: "DocWriter",    color: "#3b82f6" },
+    emailwriter:  { label: "EmailWriter",  color: "#3b82f6" },
 };
 
 type LogEntry = {

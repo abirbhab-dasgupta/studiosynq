@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { AgentChatPanel } from "@/components/agents/AgentChatPanel";
 import { redirect } from "next/navigation";
 
-const VALID_AGENTS = ["codebuddy", "clarityagent", "researchbot", "designexpert", "docwriter"];
+const VALID_AGENTS = ["codebuddy", "clarityagent", "researchbot", "designexpert", "emailwriter"];
 
 interface Props {
     params: Promise<{ name: string }>;

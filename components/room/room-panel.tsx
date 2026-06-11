@@ -29,7 +29,7 @@ const AGENTS = [
     { name: "ClarityAgent", slug: "clarityagent", color: "#6366f1" },
     { name: "ResearchBot",  slug: "researchbot",  color: "#D97706" },
     { name: "DesignExpert", slug: "designexpert", color: "#ec4899" },
-    { name: "DocWriter",    slug: "docwriter",    color: "#3b82f6" },
+    { name: "EmailWriter",  slug: "emailwriter",  color: "#3b82f6" },
 ];
 
 export function RightPanel({

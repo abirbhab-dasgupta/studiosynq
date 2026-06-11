@@ -25,11 +25,11 @@ const AGENTS = [
     role: "for designers",
     desc: "UI feedback, presentation structure, and ASCII wireframes — design help that doesn't need design software.",
   },
-  {
+   {
     icon: "✦",
-    name: "DocWriter",
-    role: "auto-detected mode",
-    desc: "Paste a snippet for JSDoc, or a full project description for a README — DocWriter auto-detects which you need.",
+    name: "EmailWriter",
+    role: "draft · improve · reply",
+    desc: "Describe the email you need, paste a draft to polish, or drop in a received email to get a sharp professional reply.",
   },
 ];
 

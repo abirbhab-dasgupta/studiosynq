@@ -9,7 +9,7 @@ const agents = [
     { name: "ClarityAgent", slug: "clarityagent", icon: P.chat,   accent: "#6366f1" },
     { name: "ResearchBot",  slug: "researchbot",  icon: P.search, accent: "#D97706" },
     { name: "DesignExpert", slug: "designexpert", icon: P.star,   accent: "#ec4899" },
-    { name: "DocWriter",    slug: "docwriter",    icon: P.book,   accent: "#3b82f6" },
+   { name: "EmailWriter",  slug: "emailwriter",  icon: P.mail,   accent: "#3b82f6" },
 ];
 
 type Props = { T: Theme };

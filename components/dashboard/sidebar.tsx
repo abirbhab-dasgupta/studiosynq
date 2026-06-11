@@ -12,7 +12,7 @@ const agents = [
     { name: "ClarityAgent", icon: P.chat, accent: "#6366f1", runs: 1 },
     { name: "ResearchBot", icon: P.search, accent: "#D97706", runs: 2 },
     { name: "DesignExpert", icon: P.star, accent: "#ec4899", runs: 1 },
-    { name: "DocWriter", icon: P.book, accent: "#3b82f6", runs: 0 },
+    { name: "EmailWriter", icon: P.mail, accent: "#3b82f6", runs: 0 },
 ];
 
 const navItems = [

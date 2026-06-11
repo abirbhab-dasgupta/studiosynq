@@ -19,7 +19,7 @@ export async function GET(
         .from(agentSessions)
         .where(and(
             eq(agentSessions.userId, session.user.id),
-            eq(agentSessions.agentName, agentName as "codebuddy" | "clarityagent" | "researchbot" | "designexpert" | "docwriter")
+            eq(agentSessions.agentName, agentName as "codebuddy" | "clarityagent" | "researchbot" | "designexpert" | "emailwriter")
         ))
         .orderBy(desc(agentSessions.updatedAt))
         .limit(20);
@@ -40,12 +40,13 @@ export async function POST(
 
     const { agentName } = await params;
     const { title = "New chat", messages = [] } = await req.json();
+    const typedAgentName = agentName as "codebuddy" | "clarityagent" | "researchbot" | "designexpert" | "emailwriter";
 
     const [created] = await db
         .insert(agentSessions)
         .values({
             userId: session.user.id,
-            agentName: agentName as "codebuddy" | "clarityagent" | "researchbot" | "designexpert" | "docwriter",
+            agentName: typedAgentName,
             title,
             messages: JSON.stringify(messages),
         })

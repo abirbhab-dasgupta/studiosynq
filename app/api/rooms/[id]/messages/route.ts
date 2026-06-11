@@ -6,7 +6,7 @@ import Pusher from "pusher";
 import { routeFull, DEFAULT_MODEL_ID } from "@/lib/agents/llm-router";
 import {
     codeBuddyPrompt, clarityAgentPrompt, researchBotPrompt,
-    designExpertPrompt, docWriterPrompt,
+    designExpertPrompt, emailWriterPrompt,
 } from "@/lib/agents/prompts";
 
 const pusher = new Pusher({
@@ -17,22 +17,22 @@ const pusher = new Pusher({
     useTLS: true,
 });
 
-type AgentSlug = "codebuddy" | "clarityagent" | "researchbot" | "designexpert" | "docwriter";
+type AgentSlug = "codebuddy" | "clarityagent" | "researchbot" | "designexpert" | "emailwriter";
 
 const AGENT_PROMPTS: Record<AgentSlug, string> = {
-    codebuddy:     codeBuddyPrompt,
-    clarityagent:  clarityAgentPrompt,
-    researchbot:   researchBotPrompt,
-    designexpert:  designExpertPrompt,
-    docwriter:     docWriterPrompt,
+    codebuddy:    codeBuddyPrompt,
+    clarityagent: clarityAgentPrompt,
+    researchbot:  researchBotPrompt,
+    designexpert: designExpertPrompt,
+    emailwriter:  emailWriterPrompt,
 };
 
 const AGENT_DISPLAY: Record<AgentSlug, string> = {
-    codebuddy:     "CodeBuddy",
-    clarityagent:  "ClarityAgent",
-    researchbot:   "ResearchBot",
-    designexpert:  "DesignExpert",
-    docwriter:     "DocWriter",
+    codebuddy:    "CodeBuddy",
+    clarityagent: "ClarityAgent",
+    researchbot:  "ResearchBot",
+    designexpert: "DesignExpert",
+    emailwriter:  "EmailWriter",
 };
 
 const VALID_AGENTS = Object.keys(AGENT_PROMPTS) as AgentSlug[];
@@ -102,25 +102,22 @@ export async function POST(
         })
         .returning();
 
-    // Broadcast user message to all room members via Pusher
+    // Broadcast user message
     await pusher.trigger(`room-${roomId}`, "new-message", {
         ...userMessage,
-        senderName: session.user.name,
+        senderName:  session.user.name,
         senderImage: session.user.image ?? null,
     });
 
-    // Detect @mention — matches first @AgentName in message
+    // Detect @mention
     const mentionMatch = content.match(/@([A-Za-z]+)/);
     if (mentionMatch) {
         const mentionedSlug = mentionMatch[1].toLowerCase() as AgentSlug;
 
         if (VALID_AGENTS.includes(mentionedSlug)) {
-            // Strip @mention prefix, remainder is the agent prompt
             const agentPrompt = content.replace(/@\w+\s*/, "").trim() || content.trim();
 
             try {
-                // Always use routeFull — we need a complete string to save + broadcast
-                // routeStream returns a UI stream not suitable for DB storage
                 const agentResponseText = await routeFull(
                     AGENT_PROMPTS[mentionedSlug],
                     agentPrompt,
@@ -133,23 +130,21 @@ export async function POST(
                         .insert(messages)
                         .values({
                             roomId,
-                            userId: session.user.id,
-                            content: agentResponseText.trim(),
+                            userId:    session.user.id,
+                            content:   agentResponseText.trim(),
                             agentName: mentionedSlug,
-                            parentId: userMessage.id,
+                            parentId:  userMessage.id,
                         })
                         .returning();
 
-                    // Broadcast agent response to all room members
                     await pusher.trigger(`room-${roomId}`, "new-message", {
                         ...agentMessage,
-                        senderName: AGENT_DISPLAY[mentionedSlug],
+                        senderName:  AGENT_DISPLAY[mentionedSlug],
                         senderImage: null,
                     });
                 }
             } catch (err) {
                 console.error(`[room-chat] Agent ${mentionedSlug} failed:`, err);
-                // Don't fail — user message already saved and broadcast
             }
         }
     }

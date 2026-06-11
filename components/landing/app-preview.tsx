@@ -143,7 +143,7 @@ function SidebarContent() {
     { label: "Tasks", active: false, amber: false },
     { label: "Focus", active: false, amber: false },
   ];
-  const agents = ["CodeBuddy", "ClarityAgent", "ResearchBot", "DesignExpert", "DocWriter"];
+  const agents = ["CodeBuddy", "ClarityAgent", "ResearchBot", "DesignExpert", "EmailWriter"];
 
   return (
     <>
@@ -241,7 +241,7 @@ function AgentPanelContent() {
       {[
         { id: "CB", name: "CodeBuddy", sub: "code · debug · review", active: true },
         { id: "RB", name: "ResearchBot", sub: "live web search", active: false },
-        { id: "DW", name: "DocWriter", sub: "readme · jsdoc", active: false },
+        { id: "EW", name: "EmailWriter", sub: "draft · improve · reply", active: false },
       ].map((agent) => (
         <div
           key={agent.id}

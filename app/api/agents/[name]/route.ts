@@ -7,25 +7,25 @@ import {
 } from "@/lib/agents/llm-router";
 import {
     codeBuddyPrompt, clarityAgentPrompt, researchBotPrompt,
-    designExpertPrompt, docWriterPrompt,
+    designExpertPrompt, emailWriterPrompt,
 } from "@/lib/agents/prompts";
 import { db } from "@/lib/db";
 import { agentLogs } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
-type AgentName = "codebuddy" | "clarityagent" | "researchbot" | "designexpert" | "docwriter";
+type AgentName = "codebuddy" | "clarityagent" | "researchbot" | "designexpert" | "emailwriter";
 
 const AGENT_CONFIG: Record<AgentName, { prompt: string; stream: boolean }> = {
-    codebuddy: { prompt: codeBuddyPrompt, stream: true },
-    clarityagent: { prompt: clarityAgentPrompt, stream: true },
-    researchbot: { prompt: researchBotPrompt, stream: false },
-    designexpert: { prompt: designExpertPrompt, stream: true },
-    docwriter: { prompt: docWriterPrompt, stream: true },
+    codebuddy:    { prompt: codeBuddyPrompt,    stream: true  },
+    clarityagent: { prompt: clarityAgentPrompt, stream: true  },
+    researchbot:  { prompt: researchBotPrompt,  stream: false },
+    designexpert: { prompt: designExpertPrompt, stream: true  },
+    emailwriter:  { prompt: emailWriterPrompt,  stream: true  },
 };
 
 const CACHE_TTL: Record<AgentName, number> = {
-    codebuddy: 0, clarityagent: 0, researchbot: 1800, designexpert: 0, docwriter: 0,
+    codebuddy: 0, clarityagent: 0, researchbot: 1800, designexpert: 0, emailwriter: 0,
 };
 
 function cacheKey(agent: string, message: string, modelId: string): string {
@@ -33,7 +33,7 @@ function cacheKey(agent: string, message: string, modelId: string): string {
     return `agent:${agent}:${Buffer.from(safe).toString("base64").slice(0, 64)}`;
 }
 
-type Part = { type: string; text?: string };
+type Part  = { type: string; text?: string };
 type UIMsg = { role: string; parts?: Part[]; content?: string };
 
 function extractMessage(body: Record<string, unknown>): string {
@@ -128,18 +128,23 @@ export async function POST(
         if (!success) {
             return new Response(JSON.stringify({ error: "Rate limit exceeded. Try again in a moment." }), {
                 status: 429,
-                headers: { "Content-Type": "application/json", "X-RateLimit-Limit": String(limit), "X-RateLimit-Remaining": String(remaining), "X-RateLimit-Reset": String(reset) },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-RateLimit-Limit": String(limit),
+                    "X-RateLimit-Remaining": String(remaining),
+                    "X-RateLimit-Reset": String(reset),
+                },
             });
         }
     }
 
-    const config = AGENT_CONFIG[agentName];
-    const ttl = CACHE_TTL[agentName];
+    const config  = AGENT_CONFIG[agentName];
+    const ttl     = CACHE_TTL[agentName];
     const history = extractHistory(body);
     const modelId = extractModelId(body);
 
     if (redis && ttl > 0 && history.length === 0) {
-        const key = cacheKey(agentName, message, modelId);
+        const key    = cacheKey(agentName, message, modelId);
         const cached = await redis.get<string>(key);
         if (cached) {
             logAgent(userId, agentName, message).catch(console.error);
@@ -148,17 +153,17 @@ export async function POST(
         }
     }
 
-    // ResearchBot
+    // ResearchBot (non-streaming)
     if (!config.stream) {
         try {
-            let prompt = config.prompt;
+            let prompt    = config.prompt;
             let webSearch = false;
             if (process.env.TAVILY_API_KEY) {
                 try {
                     const { tavilySearch, formatSearchContext } = await import("@/lib/agents/travily");
                     const results = await tavilySearch(message);
                     if (results && results.results.length > 0) {
-                        prompt = `${config.prompt}\n\n${formatSearchContext(message, results)}`;
+                        prompt    = `${config.prompt}\n\n${formatSearchContext(message, results)}`;
                         webSearch = true;
                     }
                 } catch (e) { console.warn("[agents] Tavily failed:", e); }

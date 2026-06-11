@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Bot, Lightbulb, Search, Palette, FileText } from "lucide-react";
+import { Bot, Lightbulb, Search, Palette, MailIcon } from "lucide-react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import {
     LeftTag,
@@ -27,7 +27,7 @@ const AGENTS: Agent[] = [
     { icon: Lightbulb, name: "ClarityAgent", role: "explain · simplify" },
     { icon: Search, name: "ResearchBot", role: "live web search" },
     { icon: Palette, name: "DesignExpert", role: "ui · feedback · specs" },
-    { icon: FileText, name: "DocWriter", role: "readme · jsdoc · guides" },
+     { icon: MailIcon, name: "EmailWriter", role: "draft · improve · reply" },
 ];
 
 function SignInLeft() {

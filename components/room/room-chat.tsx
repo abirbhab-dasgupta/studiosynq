@@ -37,7 +37,7 @@ const AGENT_CONFIG: Record<string, { color: string; label: string }> = {
   clarityagent: { color: "#6366f1", label: "ClarityAgent" },
   researchbot:  { color: "#D97706", label: "ResearchBot"  },
   designexpert: { color: "#ec4899", label: "DesignExpert" },
-  docwriter:    { color: "#3b82f6", label: "DocWriter"    },
+  emailwriter:  { color: "#3b82f6", label: "EmailWriter"  },
 };
 
 function formatTime(iso: string) {

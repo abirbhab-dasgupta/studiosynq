@@ -5,8 +5,8 @@ export const agentSessions = pgTable("agent_sessions", {
     id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
     agentName: text("agent_name", {
-        enum: ["codebuddy", "clarityagent", "researchbot", "designexpert", "docwriter"]
-    }).notNull(),
+  enum: ["codebuddy", "clarityagent", "researchbot", "designexpert", "emailwriter"]
+}).notNull(),
     title: text("title").notNull().default("New chat"),
     messages: text("messages").notNull().default("[]"), // JSON string
     createdAt: timestamp("created_at").defaultNow().notNull(),
