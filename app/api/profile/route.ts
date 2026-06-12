@@ -47,10 +47,19 @@ export async function PATCH(req: Request) {
         return Response.json({ error: "No valid fields to update" }, { status: 400 });
     }
 
-    await db
-        .update(user)
-        .set({ ...updates, updatedAt: new Date() })
-        .where(eq(user.id, session.user.id));
+    try {
+        await db
+            .update(user)
+            .set({ ...updates, updatedAt: new Date() })
+            .where(eq(user.id, session.user.id));
+    } catch (err: unknown) {
+        const cause = (err as { cause?: { code?: string; constraint?: string } })?.cause;
+        if (cause?.code === "23505" && cause?.constraint?.includes("username")) {
+            return Response.json({ error: "username_taken" }, { status: 409 });
+        }
+        console.error("[PATCH /api/profile]", err);
+        return Response.json({ error: "Failed to update profile" }, { status: 500 });
+    }
 
     return Response.json({ success: true });
 }

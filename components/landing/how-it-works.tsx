@@ -26,9 +26,6 @@ export default function HowItWorks() {
       style={{ background: "var(--bg2)", padding: "80px 20px" }}
     >
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <div className="reveal" style={{ display: "flex", justifyContent: "center" }}>
-          <SectionTag>60-second setup</SectionTag>
-        </div>
 
         <h2
           className="reveal reveal-d1"

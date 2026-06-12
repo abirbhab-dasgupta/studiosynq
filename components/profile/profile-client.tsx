@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import Image from "next/image";
 import { Ico, P } from "@/components/dashboard/icons";
 
 type Profile = {
@@ -27,13 +28,15 @@ export function ProfileClient({ user }: Props) {
     const queryClient = useQueryClient();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-
-    const [name, setName] = useState("");
-    const [username, setUsername] = useState("");
-    const [bio, setBio] = useState("");
-    const [avatarColor, setAvatarColor] = useState("#D97706");
+    const [form, setForm] = useState({
+        name: "",
+        username: "",
+        bio: "",
+        avatarColor: "#D97706",
+    });
     const [uploading, setUploading] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [usernameError, setUsernameError] = useState("");
 
     const { data: profile } = useQuery<Profile>({
         queryKey: ["profile"],
@@ -42,10 +45,12 @@ export function ProfileClient({ user }: Props) {
 
     useEffect(() => {
         if (profile) {
-            setName(profile.name ?? "");
-            setUsername(profile.username ?? "");
-            setBio(profile.bio ?? "");
-            setAvatarColor(profile.avatarColor ?? "#D97706");
+            setForm({
+                name: profile.name ?? "",
+                username: profile.username ?? "",
+                bio: profile.bio ?? "",
+                avatarColor: profile.avatarColor ?? "#D97706",
+            });
         }
     }, [profile]);
 
@@ -57,11 +62,23 @@ export function ProfileClient({ user }: Props) {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),
-            }).then(r => r.json()),
+            }).then(async r => {
+                if (!r.ok) throw new Error(await r.text());
+                return r.json();
+            }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["profile"] });
+            setUsernameError("");
             setSaved(true);
             setTimeout(() => setSaved(false), 2000);
+        },
+        onError: (err) => {
+            const msg = err instanceof Error ? err.message : "";
+            if (msg.includes("username_taken")) {
+                setUsernameError("This username is already taken. Please choose a different one.");
+            } else {
+                console.error("[saveProfile]", err);
+            }
         },
     });
 
@@ -115,7 +132,7 @@ export function ProfileClient({ user }: Props) {
                     Profile settings
                 </p>
                 <button
-                    onClick={() => saveProfile.mutate({ name, username, bio, avatarColor })}
+                    onClick={() => saveProfile.mutate({ name: form.name, username: form.username, bio: form.bio, avatarColor: form.avatarColor })}
                     disabled={saveProfile.isPending}
                     style={{
                         height: 36, padding: "0 20px",
@@ -143,9 +160,11 @@ export function ProfileClient({ user }: Props) {
                     </p>
                     <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
                         {profile?.image ? (
-                            <img
+                            <Image
                                 src={profile.image}
                                 alt="avatar"
+                                width={80}
+                                height={80}
                                 style={{
                                     width: 80, height: 80, borderRadius: "50%",
                                     objectFit: "cover",
@@ -156,9 +175,9 @@ export function ProfileClient({ user }: Props) {
                         ) : (
                             <div style={{
                                 width: 80, height: 80, borderRadius: "50%",
-                                background: avatarColor + "22",
-                                border: `2px solid ${avatarColor}55`,
-                                color: avatarColor,
+                                background: form.avatarColor + "22",
+                                border: `2px solid ${form.avatarColor}55`,
+                                color: form.avatarColor,
                                 display: "flex", alignItems: "center",
                                 justifyContent: "center",
                                 fontSize: 26, fontWeight: 600,
@@ -195,13 +214,13 @@ export function ProfileClient({ user }: Props) {
                                     <button
                                         key={color}
                                         onClick={() => {
-                                            setAvatarColor(color);
+                                            setForm(f => ({ ...f, avatarColor: color }));
                                             saveProfile.mutate({ avatarColor: color });
                                         }}
                                         style={{
                                             width: 24, height: 24, borderRadius: "50%",
                                             background: color, cursor: "pointer",
-                                            border: avatarColor === color
+                                            border: form.avatarColor === color
                                                 ? "2.5px solid var(--text)"
                                                 : "2px solid transparent",
                                             transition: "transform .15s",
@@ -231,8 +250,8 @@ export function ProfileClient({ user }: Props) {
                             Display name
                         </label>
                         <input
-                            value={name}
-                            onChange={e => setName(e.target.value)}
+                            value={form.name}
+                            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                             placeholder="Your name"
                             style={inputStyle}
                         />
@@ -251,12 +270,26 @@ export function ProfileClient({ user }: Props) {
                                 pointerEvents: "none",
                             }}>@</span>
                             <input
-                                value={username}
-                                onChange={e => setUsername(e.target.value)}
+                                value={form.username}
+                                onChange={e => {
+                                    setForm(f => ({ ...f, username: e.target.value }));
+                                    setUsernameError("");
+                                }}
                                 placeholder="username"
                                 style={{ ...inputStyle, paddingLeft: 28, fontFamily: "var(--font-mono)" }}
                             />
                         </div>
+                        {usernameError && (
+                            <span style={{
+                                fontSize: 11,
+                                color: "#ef4444",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                            }}>
+                                ⚠ {usernameError}
+                            </span>
+                        )}
                     </div>
 
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -278,8 +311,8 @@ export function ProfileClient({ user }: Props) {
                             Bio
                         </label>
                         <textarea
-                            value={bio}
-                            onChange={e => setBio(e.target.value)}
+                            value={form.bio}
+                            onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
                             placeholder="Tell your teammates about yourself..."
                             rows={4}
                             style={{
@@ -293,7 +326,6 @@ export function ProfileClient({ user }: Props) {
                     </div>
                 </div>
 
-                
 
             </div>
         </div>
