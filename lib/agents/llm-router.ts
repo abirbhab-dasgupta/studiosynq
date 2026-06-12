@@ -10,19 +10,14 @@ export type ChatMessage = { role: "user" | "assistant"; content: string };
 export type ModelProvider = "groq" | "gemini" | "mistral";
 
 export type ModelId =
-    // Groq models
+    // Groq
     | "groq/openai/gpt-oss-120b"
     | "groq/llama-3.3-70b-versatile"
-    | "groq/meta-llama/llama-4-scout-17b-16e-instruct"
-    | "groq/groq/compound"
-    | "groq/llama-3.1-8b-instant"
-    // Gemini models
-    | "gemini/gemini-1.5-pro"
-    | "gemini/gemini-1.5-flash"
+    // Gemini
     | "gemini/gemini-2.0-flash"
-    // Mistral models
+    | "gemini/gemini-1.5-pro"
+    // Mistral
     | "mistral/mistral-large-latest"
-    | "mistral/mistral-small-latest"
     | "mistral/codestral-latest";
 
 export interface ModelOption {
@@ -34,7 +29,7 @@ export interface ModelOption {
     badge: string;
     badgeColor: string;
     providerColor: string;
-    requiresKey: string; // env var name
+    requiresKey: string;
 }
 
 export const ALL_MODELS: ModelOption[] = [
@@ -51,46 +46,13 @@ export const ALL_MODELS: ModelOption[] = [
         requiresKey: "GROQ_API_KEY",
     },
     {
-        id: "groq/groq/compound",
-        provider: "groq",
-        providerLabel: "Groq",
-        label: "Groq Compound",
-        description: "Groq's agentic model. Optimised for tool use and multi-step tasks.",
-        badge: "Agentic",
-        badgeColor: "#6366f1",
-        providerColor: "#f97316",
-        requiresKey: "GROQ_API_KEY",
-    },
-    {
         id: "groq/llama-3.3-70b-versatile",
         provider: "groq",
         providerLabel: "Groq",
         label: "Llama 3.3 70B",
         description: "Balanced quality and speed. Great all-rounder for everyday tasks.",
-        badge: "Default",
+        badge: "Basic",
         badgeColor: "#D97706",
-        providerColor: "#f97316",
-        requiresKey: "GROQ_API_KEY",
-    },
-    {
-        id: "groq/meta-llama/llama-4-scout-17b-16e-instruct",
-        provider: "groq",
-        providerLabel: "Groq",
-        label: "Llama 4 Scout 17B",
-        description: "Newer Llama 4 architecture. Fast with strong instruction following.",
-        badge: "New",
-        badgeColor: "#ec4899",
-        providerColor: "#f97316",
-        requiresKey: "GROQ_API_KEY",
-    },
-    {
-        id: "groq/llama-3.1-8b-instant",
-        provider: "groq",
-        providerLabel: "Groq",
-        label: "Llama 3.1 8B",
-        description: "Fastest responses. Best for simple tasks and quick lookups.",
-        badge: "Fast",
-        badgeColor: "#3b82f6",
         providerColor: "#f97316",
         requiresKey: "GROQ_API_KEY",
     },
@@ -102,7 +64,7 @@ export const ALL_MODELS: ModelOption[] = [
         providerLabel: "Gemini",
         label: "Gemini 2.0 Flash",
         description: "Google's latest fast model. Excellent reasoning and multimodal understanding.",
-        badge: "Latest",
+        badge: "Default",
         badgeColor: "#10b981",
         providerColor: "#4285f4",
         requiresKey: "GEMINI_API_KEY",
@@ -115,17 +77,6 @@ export const ALL_MODELS: ModelOption[] = [
         description: "Google's most capable model. Best for long documents and complex tasks.",
         badge: "Pro",
         badgeColor: "#6366f1",
-        providerColor: "#4285f4",
-        requiresKey: "GEMINI_API_KEY",
-    },
-    {
-        id: "gemini/gemini-1.5-flash",
-        provider: "gemini",
-        providerLabel: "Gemini",
-        label: "Gemini 1.5 Flash",
-        description: "Fast and efficient. Great balance of quality and speed.",
-        badge: "Fast",
-        badgeColor: "#3b82f6",
         providerColor: "#4285f4",
         requiresKey: "GEMINI_API_KEY",
     },
@@ -153,26 +104,15 @@ export const ALL_MODELS: ModelOption[] = [
         providerColor: "#ff7000",
         requiresKey: "MISTRAL_API_KEY",
     },
-    {
-        id: "mistral/mistral-small-latest",
-        provider: "mistral",
-        providerLabel: "Mistral",
-        label: "Mistral Small",
-        description: "Lightweight and fast. Good for simple tasks with low latency.",
-        badge: "Fast",
-        badgeColor: "#3b82f6",
-        providerColor: "#ff7000",
-        requiresKey: "MISTRAL_API_KEY",
-    },
 ];
 
-export const DEFAULT_MODEL_ID: ModelId = "groq/llama-3.3-70b-versatile";
+export const DEFAULT_MODEL_ID: ModelId = "gemini/gemini-2.0-flash";
 
 // ── Model resolver ─────────────────────────────────────────────────────────
 
 function resolveModel(modelId: ModelId): LanguageModel {
     const [provider, ...rest] = modelId.split("/");
-    const modelName = rest.join("/"); // handles nested slashes like openai/gpt-oss-120b
+    const modelName = rest.join("/");
 
     switch (provider) {
         case "groq": {
@@ -195,12 +135,13 @@ function resolveModel(modelId: ModelId): LanguageModel {
     }
 }
 
-// Fallback chain when preferred model fails
+// ── Fallback chain ─────────────────────────────────────────────────────────
+
 function getFallbackModels(preferredId: ModelId): LanguageModel[] {
     const fallbacks: ModelId[] = [
         "groq/llama-3.3-70b-versatile",
-        "gemini/gemini-1.5-flash",
-        "mistral/mistral-small-latest",
+        "gemini/gemini-2.0-flash",
+        "mistral/mistral-large-latest",
     ].filter(id => id !== preferredId) as ModelId[];
 
     const models: LanguageModel[] = [];
@@ -208,7 +149,7 @@ function getFallbackModels(preferredId: ModelId): LanguageModel[] {
         try {
             models.push(resolveModel(id));
         } catch {
-            // API key not set — skip this fallback
+            // API key not set — skip
         }
     }
     return models;
@@ -224,7 +165,6 @@ export async function routeStream(
 ): Promise<Response> {
     const allMessages: ChatMessage[] = [...history, { role: "user", content: userMessage }];
 
-    // Try preferred model first, then fallbacks
     const modelsToTry: LanguageModel[] = [];
     try { modelsToTry.push(resolveModel(modelId)); } catch { /* key not set */ }
     modelsToTry.push(...getFallbackModels(modelId));
@@ -251,7 +191,7 @@ export async function routeStream(
     throw lastError;
 }
 
-// ── Full (ResearchBot) ─────────────────────────────────────────────────────
+// ── Full (ResearchBot + room chat agents) ──────────────────────────────────
 
 export async function routeFull(
     systemPrompt: string,
