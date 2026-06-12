@@ -14,6 +14,8 @@
 
 **[Live Demo →](https://studiosynq.vercel.app)**
 
+<img src="public/studiosynq-landing.png" alt="Studiosynq — Collaborative AI Workspace" width="100%" style="border-radius: 12px;" />
+
 </div>
 
 ---
@@ -217,6 +219,6 @@ MIT — see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-Built by [Abirbhab Dasgupta](https://github.com/abirbhab-dasgupta) 
+Built by [Abirbhab Dasgupta](https://abirbhabdasgupta.vercel.app) 
 
 </div>
