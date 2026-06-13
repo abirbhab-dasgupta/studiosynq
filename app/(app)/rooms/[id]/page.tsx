@@ -1,6 +1,9 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
+import { db } from "@/lib/db";
+import { rooms, roomMembers } from "@/lib/db/index";
+import { and, eq } from "drizzle-orm";
 import { RoomClient } from "@/components/room/room-client";
 
 type Props = {
@@ -12,6 +15,24 @@ export default async function RoomPage({ params }: Props) {
     if (!session) redirect("/auth/sign-in");
 
     const { id } = await params;
+
+    // Verify room exists
+    const [room] = await db
+        .select({ id: rooms.id })
+        .from(rooms)
+        .where(eq(rooms.id, id))
+        .limit(1);
+
+    if (!room) notFound();
+
+    // Verify user is a member
+    const [membership] = await db
+        .select({ userId: roomMembers.userId })
+        .from(roomMembers)
+        .where(and(eq(roomMembers.roomId, id), eq(roomMembers.userId, session.user.id)))
+        .limit(1);
+
+    if (!membership) notFound();
 
     return <RoomClient roomId={id} user={session.user} />;
 }
