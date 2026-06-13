@@ -18,7 +18,7 @@ export default async function FocusPage({ searchParams }: FocusPageProps) {
 
   const { roomId } = await searchParams;
 
-  // ── All rooms user is a member of ─────────────────────────────────────────
+ 
   const membershipRows = await db
     .select({ roomId: roomMembers.roomId, roomName: rooms.name })
     .from(roomMembers)
@@ -27,7 +27,7 @@ export default async function FocusPage({ searchParams }: FocusPageProps) {
 
   const allRooms = membershipRows.map((r) => ({ id: r.roomId, name: r.roomName }));
 
-  // ── Resolve active room ───────────────────────────────────────────────────
+ 
   let resolvedRoomId   = "solo";
   let resolvedRoomName = "Solo";
 
@@ -41,7 +41,7 @@ export default async function FocusPage({ searchParams }: FocusPageProps) {
     resolvedRoomName = allRooms[0].name;
   }
 
-  // ── Members of resolved room ──────────────────────────────────────────────
+ 
   let members: SidebarMember[];
 
   if (resolvedRoomId !== "solo") {
@@ -61,7 +61,6 @@ export default async function FocusPage({ searchParams }: FocusPageProps) {
     }];
   }
 
-  // ── Today's stats ─────────────────────────────────────────────────────────
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
@@ -87,7 +86,6 @@ export default async function FocusPage({ searchParams }: FocusPageProps) {
 
   return (
     <div className="focus-page">
-      {/* FocusTimer renders its own subheader with room switcher */}
       <div className="focus-page-body">
         <FocusTimer
           roomId={resolvedRoomId}

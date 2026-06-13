@@ -35,7 +35,7 @@ export interface UpdateTaskInput {
   estimatedMinutes?: number | null;
 }
 
-// ── fetch ──────────────────────────────────────────────────────────────────
+
 
 export function useTasks(roomId: string) {
   return useQuery<Task[]>({
@@ -46,11 +46,10 @@ export function useTasks(roomId: string) {
       return res.json();
     },
     refetchInterval: 5000,
-    staleTime: 2000, // prevent aggressive refetches during mutations
+    staleTime: 2000, 
   });
 }
 
-// ── create ─────────────────────────────────────────────────────────────────
 
 export function useCreateTask(roomId: string) {
   const queryClient = useQueryClient();
@@ -74,7 +73,7 @@ export function useCreateTask(roomId: string) {
   });
 }
 
-// ── update ─────────────────────────────────────────────────────────────────
+
 
 export function useUpdateTask(roomId: string) {
   const queryClient = useQueryClient();
@@ -90,19 +89,19 @@ export function useUpdateTask(roomId: string) {
       return res.json() as Promise<Task>;
     },
     onSuccess: (updatedTask) => {
-      // Replace the task in cache directly with server response
+      
       queryClient.setQueryData<Task[]>(["tasks", roomId], (old) =>
         old?.map((t) => (t.id === updatedTask.id ? updatedTask : t)) ?? []
       );
     },
     onError: () => {
-      // On error, refetch to get true server state
+   
       queryClient.invalidateQueries({ queryKey: ["tasks", roomId] });
     },
   });
 }
 
-// ── delete ─────────────────────────────────────────────────────────────────
+
 
 export function useDeleteTask(roomId: string) {
   const queryClient = useQueryClient();
@@ -115,7 +114,6 @@ export function useDeleteTask(roomId: string) {
       if (!res.ok) throw new Error("Failed to delete task");
     },
     onSuccess: (_data, taskId) => {
-      // Remove from cache directly
       queryClient.setQueryData<Task[]>(["tasks", roomId], (old) =>
         old?.filter((t) => t.id !== taskId) ?? []
       );

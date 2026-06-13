@@ -10,7 +10,6 @@ import {
     LeftHeadline,
     LeftSub,
     AgentList,
-    SocialProof,
 } from "@/components/auth/auth-left-parts";
 import type { Agent } from "@/components/auth/auth-left-parts";
 import {

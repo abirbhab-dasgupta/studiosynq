@@ -20,7 +20,7 @@ export function useChatMessages(roomId: string) {
             if (!res.ok) throw new Error("Failed to fetch messages");
             return res.json();
         },
-        staleTime: Infinity, // Pusher handles updates — no polling needed
+        staleTime: Infinity, 
     });
 }
 
@@ -38,8 +38,6 @@ export function useSendMessage(roomId: string) {
             return res.json();
         },
         onSuccess: () => {
-            // Pusher will broadcast the new message — but also invalidate
-            // as fallback in case Pusher delivery is delayed
             queryClient.invalidateQueries({ queryKey: ["messages", roomId] });
         },
     });

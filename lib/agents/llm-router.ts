@@ -5,18 +5,13 @@ import { streamText, generateText, LanguageModel } from "ai";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 
-// ── Provider enum ──────────────────────────────────────────────────────────
-
 export type ModelProvider = "groq" | "gemini" | "mistral";
 
 export type ModelId =
-    // Groq
     | "groq/openai/gpt-oss-120b"
     | "groq/llama-3.3-70b-versatile"
-    // Gemini
     | "gemini/gemini-2.0-flash"
     | "gemini/gemini-1.5-pro"
-    // Mistral
     | "mistral/mistral-large-latest"
     | "mistral/codestral-latest";
 
@@ -33,14 +28,13 @@ export interface ModelOption {
 }
 
 export const ALL_MODELS: ModelOption[] = [
-    // ── Groq ──────────────────────────────────────────────────────────────
     {
         id: "groq/openai/gpt-oss-120b",
         provider: "groq",
         providerLabel: "Groq",
         label: "GPT-OSS 120B",
         description: "Highest quality on Groq. Best for complex reasoning and code.",
-        badge: "Best",
+        badge: "Default",
         badgeColor: "#10b981",
         providerColor: "#f97316",
         requiresKey: "GROQ_API_KEY",
@@ -51,20 +45,18 @@ export const ALL_MODELS: ModelOption[] = [
         providerLabel: "Groq",
         label: "Llama 3.3 70B",
         description: "Balanced quality and speed. Great all-rounder for everyday tasks.",
-        badge: "Basic",
+        badge: "Fast",
         badgeColor: "#D97706",
         providerColor: "#f97316",
         requiresKey: "GROQ_API_KEY",
     },
-
-    // ── Gemini ────────────────────────────────────────────────────────────
     {
         id: "gemini/gemini-2.0-flash",
         provider: "gemini",
         providerLabel: "Gemini",
         label: "Gemini 2.0 Flash",
         description: "Google's latest fast model. Excellent reasoning and multimodal understanding.",
-        badge: "Default",
+        badge: "Flash",
         badgeColor: "#10b981",
         providerColor: "#4285f4",
         requiresKey: "GEMINI_API_KEY",
@@ -80,8 +72,6 @@ export const ALL_MODELS: ModelOption[] = [
         providerColor: "#4285f4",
         requiresKey: "GEMINI_API_KEY",
     },
-
-    // ── Mistral ───────────────────────────────────────────────────────────
     {
         id: "mistral/mistral-large-latest",
         provider: "mistral",
@@ -106,7 +96,18 @@ export const ALL_MODELS: ModelOption[] = [
     },
 ];
 
-export const DEFAULT_MODEL_ID: ModelId = "gemini/gemini-2.0-flash";
+export const DEFAULT_MODEL_ID: ModelId = "groq/openai/gpt-oss-120b";
+
+// ── Fallback chain ─────────────────────────────────────────────────────────
+// Order: GPT-OSS 120B → Llama 3.3 70B → Gemini Flash → Mistral Large
+// All three provider keys are available, so all four slots are active.
+
+const FALLBACK_CHAIN: ModelId[] = [
+    "groq/openai/gpt-oss-120b",
+    "mistral/mistral-large-latest",
+    "gemini/gemini-2.0-flash",
+    "groq/llama-3.3-70b-versatile",
+];
 
 // ── Model resolver ─────────────────────────────────────────────────────────
 
@@ -117,81 +118,38 @@ function resolveModel(modelId: ModelId): LanguageModel {
     switch (provider) {
         case "groq": {
             if (!process.env.GROQ_API_KEY) throw new Error("GROQ_API_KEY not set");
-            const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
-            return groq(modelName);
+            return createGroq({ apiKey: process.env.GROQ_API_KEY })(modelName);
         }
         case "gemini": {
             if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not set");
-            const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY });
-            return google(modelName);
+            return createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY })(modelName);
         }
         case "mistral": {
             if (!process.env.MISTRAL_API_KEY) throw new Error("MISTRAL_API_KEY not set");
-            const mistral = createMistral({ apiKey: process.env.MISTRAL_API_KEY });
-            return mistral(modelName);
+            return createMistral({ apiKey: process.env.MISTRAL_API_KEY })(modelName);
         }
         default:
             throw new Error(`Unknown provider: ${provider}`);
     }
 }
 
-// ── Fallback chain ─────────────────────────────────────────────────────────
-
-function getFallbackModels(preferredId: ModelId): LanguageModel[] {
-    const fallbacks: ModelId[] = [
-        "groq/llama-3.3-70b-versatile",
-        "gemini/gemini-2.0-flash",
-        "mistral/mistral-large-latest",
-    ].filter(id => id !== preferredId) as ModelId[];
+// Build ordered model list: preferred first, then fallbacks (no duplicates)
+function buildModelList(preferredId: ModelId): LanguageModel[] {
+    const order = [
+        preferredId,
+        ...FALLBACK_CHAIN.filter(id => id !== preferredId),
+    ];
 
     const models: LanguageModel[] = [];
-    for (const id of fallbacks) {
-        try {
-            models.push(resolveModel(id));
-        } catch {
-            // API key not set — skip
-        }
+    for (const id of order) {
+        try { models.push(resolveModel(id)); } catch { /* key not set — skip */ }
     }
     return models;
 }
 
-// ── Stream ─────────────────────────────────────────────────────────────────
-
-export async function routeStream(
-    systemPrompt: string,
-    userMessage: string,
-    history: ChatMessage[] = [],
-    modelId: ModelId = DEFAULT_MODEL_ID
-): Promise<Response> {
-    const allMessages: ChatMessage[] = [...history, { role: "user", content: userMessage }];
-
-    const modelsToTry: LanguageModel[] = [];
-    try { modelsToTry.push(resolveModel(modelId)); } catch { /* key not set */ }
-    modelsToTry.push(...getFallbackModels(modelId));
-
-    if (modelsToTry.length === 0) {
-        throw new Error("No LLM provider configured. Add at least one API key to .env.local.");
-    }
-
-    let lastError: unknown;
-    for (const model of modelsToTry) {
-        try {
-            const result = streamText({
-                model,
-                system: systemPrompt,
-                messages: allMessages,
-                maxOutputTokens: 2048,
-            });
-            return result.toUIMessageStreamResponse();
-        } catch (err) {
-            lastError = err;
-            continue;
-        }
-    }
-    throw lastError;
-}
-
-// ── Full (ResearchBot + room chat agents) ──────────────────────────────────
+// ── routeFull — generateText with working fallback ─────────────────────────
+// generateText awaits the full response, so quota/auth errors throw
+// synchronously and the catch block can try the next model.
 
 export async function routeFull(
     systemPrompt: string,
@@ -199,30 +157,72 @@ export async function routeFull(
     history: ChatMessage[] = [],
     modelId: ModelId = DEFAULT_MODEL_ID
 ): Promise<string> {
-    const allMessages: ChatMessage[] = [...history, { role: "user", content: userMessage }];
+    const messages: ChatMessage[] = [...history, { role: "user", content: userMessage }];
+    const models = buildModelList(modelId);
 
-    const modelsToTry: LanguageModel[] = [];
-    try { modelsToTry.push(resolveModel(modelId)); } catch { /* key not set */ }
-    modelsToTry.push(...getFallbackModels(modelId));
-
-    if (modelsToTry.length === 0) {
-        throw new Error("No LLM provider configured. Add at least one API key to .env.local.");
+    if (models.length === 0) {
+        throw new Error("No LLM provider configured. Add at least one API key.");
     }
 
     let lastError: unknown;
-    for (const model of modelsToTry) {
+    for (const model of models) {
         try {
             const result = await generateText({
                 model,
                 system: systemPrompt,
-                messages: allMessages,
+                messages,
                 maxOutputTokens: 2048,
             });
             return result.text;
         } catch (err) {
             lastError = err;
-            continue;
+            continue; // try next model
         }
     }
     throw lastError;
+}
+
+export async function routeStream(
+    systemPrompt: string,
+    userMessage: string,
+    history: ChatMessage[] = [],
+    modelId: ModelId = DEFAULT_MODEL_ID
+): Promise<Response> {
+    const messages: ChatMessage[] = [...history, { role: "user", content: userMessage }];
+    const models = buildModelList(modelId);
+
+    if (models.length === 0) {
+        return Response.json(
+            { error: "No LLM provider configured. Add at least one API key." },
+            { status: 503 }
+        );
+    }
+
+    for (const model of models) {
+        try {
+            // Probe: verify the model responds before committing to a stream.
+            await generateText({
+                model,
+                system: "Reply with one word: ok",
+                messages: [{ role: "user", content: "ok" }],
+                maxOutputTokens: 5,
+            });
+
+            // Probe passed — stream with the same model.
+            const result = streamText({
+                model,
+                system: systemPrompt,
+                messages,
+                maxOutputTokens: 2048,
+            });
+            return result.toUIMessageStreamResponse();
+        } catch {
+            continue; // probe failed — try next model
+        }
+    }
+
+    return Response.json(
+        { error: "All providers failed. Please try again later." },
+        { status: 503 }
+    );
 }
