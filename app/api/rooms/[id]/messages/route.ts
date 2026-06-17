@@ -5,149 +5,168 @@ import { headers } from "next/headers";
 import Pusher from "pusher";
 import { routeFull, DEFAULT_MODEL_ID } from "@/lib/agents/llm-router";
 import {
-    codeBuddyPrompt, clarityAgentPrompt, researchBotPrompt,
-    designExpertPrompt, emailWriterPrompt,
+  codeBuddyPrompt,
+  clarityAgentPrompt,
+  researchBotPrompt,
+  designExpertPrompt,
+  emailWriterPrompt,
 } from "@/lib/agents/prompts";
 
 const pusher = new Pusher({
-    appId: process.env.PUSHER_APP_ID!,
-    key: process.env.PUSHER_KEY!,
-    secret: process.env.PUSHER_SECRET!,
-    cluster: process.env.PUSHER_CLUSTER!,
-    useTLS: true,
+  appId: process.env.PUSHER_APP_ID!,
+  key: process.env.PUSHER_KEY!,
+  secret: process.env.PUSHER_SECRET!,
+  cluster: process.env.PUSHER_CLUSTER!,
+  useTLS: true,
 });
 
-type AgentSlug = "codebuddy" | "clarityagent" | "researchbot" | "designexpert" | "emailwriter";
+type AgentSlug =
+  | "codebuddy"
+  | "clarityagent"
+  | "researchbot"
+  | "designexpert"
+  | "emailwriter";
 
 const AGENT_PROMPTS: Record<AgentSlug, string> = {
-    codebuddy:    codeBuddyPrompt,
-    clarityagent: clarityAgentPrompt,
-    researchbot:  researchBotPrompt,
-    designexpert: designExpertPrompt,
-    emailwriter:  emailWriterPrompt,
+  codebuddy: codeBuddyPrompt,
+  clarityagent: clarityAgentPrompt,
+  researchbot: researchBotPrompt,
+  designexpert: designExpertPrompt,
+  emailwriter: emailWriterPrompt,
 };
 
 const AGENT_DISPLAY: Record<AgentSlug, string> = {
-    codebuddy:    "CodeBuddy",
-    clarityagent: "ClarityAgent",
-    researchbot:  "ResearchBot",
-    designexpert: "DesignExpert",
-    emailwriter:  "EmailWriter",
+  codebuddy: "CodeBuddy",
+  clarityagent: "ClarityAgent",
+  researchbot: "ResearchBot",
+  designexpert: "DesignExpert",
+  emailwriter: "EmailWriter",
 };
 
 const VALID_AGENTS = Object.keys(AGENT_PROMPTS) as AgentSlug[];
 
 // GET /api/rooms/[id]/messages
 export async function GET(
-    _req: Request,
-    { params }: { params: Promise<{ id: string }> }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session)
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { id: roomId } = await params;
+  const { id: roomId } = await params;
 
-    const membership = await db
-        .select()
-        .from(roomMembers)
-        .where(and(eq(roomMembers.roomId, roomId), eq(roomMembers.userId, session.user.id)))
-        .limit(1);
+  const membership = await db
+    .select()
+    .from(roomMembers)
+    .where(
+      and(
+        eq(roomMembers.roomId, roomId),
+        eq(roomMembers.userId, session.user.id),
+      ),
+    )
+    .limit(1);
 
-    if (!membership.length) {
-        return Response.json({ error: "Forbidden" }, { status: 403 });
-    }
+  if (!membership.length) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
-    const roomMessages = await db
-        .select()
-        .from(messages)
-        .where(eq(messages.roomId, roomId))
-        .orderBy(asc(messages.createdAt))
-        .limit(100);
+  const roomMessages = await db
+    .select()
+    .from(messages)
+    .where(eq(messages.roomId, roomId))
+    .orderBy(asc(messages.createdAt))
+    .limit(100);
 
-    return Response.json(roomMessages);
+  return Response.json(roomMessages);
 }
 
 // POST /api/rooms/[id]/messages
 export async function POST(
-    req: Request,
-    { params }: { params: Promise<{ id: string }> }
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session)
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { id: roomId } = await params;
+  const { id: roomId } = await params;
 
-    const membership = await db
-        .select()
-        .from(roomMembers)
-        .where(and(eq(roomMembers.roomId, roomId), eq(roomMembers.userId, session.user.id)))
-        .limit(1);
+  const membership = await db
+    .select()
+    .from(roomMembers)
+    .where(
+      and(
+        eq(roomMembers.roomId, roomId),
+        eq(roomMembers.userId, session.user.id),
+      ),
+    )
+    .limit(1);
 
-    if (!membership.length) {
-        return Response.json({ error: "Forbidden" }, { status: 403 });
-    }
+  if (!membership.length) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
-    const { content } = await req.json();
-    if (!content?.trim()) {
-        return Response.json({ error: "Content required" }, { status: 400 });
-    }
+  const { content } = await req.json();
+  if (!content?.trim()) {
+    return Response.json({ error: "Content required" }, { status: 400 });
+  }
 
-    // Save user message
-    const [userMessage] = await db
-        .insert(messages)
-        .values({
-            roomId,
-            userId: session.user.id,
-            content: content.trim(),
-        })
-        .returning();
+  // Save user message
+  const [userMessage] = await db
+    .insert(messages)
+    .values({
+      roomId,
+      userId: session.user.id,
+      content: content.trim(),
+    })
+    .returning();
 
-    // Broadcast user message
-    await pusher.trigger(`room-${roomId}`, "new-message", {
-        ...userMessage,
-        senderName:  session.user.name,
-        senderImage: session.user.image ?? null,
-    });
+  // Broadcast user message
+  await pusher.trigger(`room-${roomId}`, "new-message", {
+    ...userMessage,
+    senderName: session.user.name,
+    senderImage: session.user.image ?? null,
+  });
 
-    // Detect @mention
-    const mentionMatch = content.match(/@([A-Za-z]+)/);
-    if (mentionMatch) {
-        const mentionedSlug = mentionMatch[1].toLowerCase() as AgentSlug;
+  // Detect @mention
+  const mentionMatch = content.match(/@([A-Za-z]+)/);
+  if (mentionMatch) {
+    const mentionedSlug = mentionMatch[1].toLowerCase() as AgentSlug;
 
-        if (VALID_AGENTS.includes(mentionedSlug)) {
-            const agentPrompt = content.replace(/@\w+\s*/, "").trim() || content.trim();
+    if (VALID_AGENTS.includes(mentionedSlug)) {
+      const agentPrompt =
+        content.replace(/@\w+\s*/, "").trim() || content.trim();
 
-            try {
-                const agentResponseText = await routeFull(
-                    AGENT_PROMPTS[mentionedSlug],
-                    agentPrompt,
-                    [],
-                    DEFAULT_MODEL_ID
-                );
+      try {
+        const agentResponseText = await routeFull(
+          AGENT_PROMPTS[mentionedSlug],
+          [{ role: "user", content: agentPrompt }],
+          DEFAULT_MODEL_ID,
+        );
+        if (agentResponseText.trim()) {
+          const [agentMessage] = await db
+            .insert(messages)
+            .values({
+              roomId,
+              userId: session.user.id,
+              content: agentResponseText.trim(),
+              agentName: mentionedSlug,
+              parentId: userMessage.id,
+            })
+            .returning();
 
-                if (agentResponseText.trim()) {
-                    const [agentMessage] = await db
-                        .insert(messages)
-                        .values({
-                            roomId,
-                            userId:    session.user.id,
-                            content:   agentResponseText.trim(),
-                            agentName: mentionedSlug,
-                            parentId:  userMessage.id,
-                        })
-                        .returning();
-
-                    await pusher.trigger(`room-${roomId}`, "new-message", {
-                        ...agentMessage,
-                        senderName:  AGENT_DISPLAY[mentionedSlug],
-                        senderImage: null,
-                    });
-                }
-            } catch (err) {
-                console.error(`[room-chat] Agent ${mentionedSlug} failed:`, err);
-            }
+          await pusher.trigger(`room-${roomId}`, "new-message", {
+            ...agentMessage,
+            senderName: AGENT_DISPLAY[mentionedSlug],
+            senderImage: null,
+          });
         }
+      } catch (err) {
+        console.error(`[room-chat] Agent ${mentionedSlug} failed:`, err);
+      }
     }
+  }
 
-    return Response.json(userMessage, { status: 201 });
+  return Response.json(userMessage, { status: 201 });
 }
