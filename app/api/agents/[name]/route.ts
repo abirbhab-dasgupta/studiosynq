@@ -28,58 +28,51 @@ const CACHE_TTL: Record<AgentName, number> = {
     codebuddy: 0, clarityagent: 0, researchbot: 1800, designexpert: 0, emailwriter: 0,
 };
 
-function cacheKey(agent: string, message: string, modelId: string): string {
-    const safe = `${modelId}:${message}`.slice(0, 220).replace(/\s+/g, " ").trim();
+function cacheKey(agent: string, lastMessage: string, modelId: string): string {
+    const safe = `${modelId}:${lastMessage}`.slice(0, 220).replace(/\s+/g, " ").trim();
     return `agent:${agent}:${Buffer.from(safe).toString("base64").slice(0, 64)}`;
 }
 
-type Part  = { type: string; text?: string };
-type UIMsg = { role: string; parts?: Part[]; content?: string };
+// ── Body parsers ───────────────────────────────────────────────────────────
+//
+// The AgentChatPanel sends:
+//   { messages: [{role, content},...], modelId }
+//
+// `messages` is the COMPLETE conversation — all prior turns + the new user
+// message at the end. We pass this directly to routeStream / routeFull.
 
-function extractMessage(body: Record<string, unknown>): string {
-    if (typeof body.message === "string" && body.message.trim()) return body.message.trim();
-    if (body.message && typeof body.message === "object") {
-        const m = body.message as UIMsg;
-        if (Array.isArray(m.parts)) {
-            const t = m.parts.filter((p): p is { type: "text"; text: string } =>
-                p.type === "text" && typeof p.text === "string").map(p => p.text).join("");
-            if (t.trim()) return t.trim();
-        }
-        if (typeof m.content === "string" && m.content.trim()) return m.content.trim();
-    }
-    if (Array.isArray(body.messages)) {
-        const msgs = body.messages as UIMsg[];
-        for (let i = msgs.length - 1; i >= 0; i--) {
-            const m = msgs[i]; if (m.role !== "user") continue;
-            if (Array.isArray(m.parts)) {
-                const t = m.parts.filter((p): p is { type: "text"; text: string } =>
-                    p.type === "text" && typeof p.text === "string").map(p => p.text).join("");
-                if (t.trim()) return t.trim();
-            }
-            if (typeof m.content === "string" && m.content.trim()) return m.content.trim();
-        }
+type RawMsg = { role: string; content?: string; parts?: Array<{ type: string; text?: string }> };
+
+function parseContent(m: RawMsg): string {
+    if (typeof m.content === "string" && m.content.trim()) return m.content.trim();
+    if (Array.isArray(m.parts)) {
+        return m.parts
+            .filter((p): p is { type: "text"; text: string } =>
+                p.type === "text" && typeof p.text === "string")
+            .map(p => p.text)
+            .join("")
+            .trim();
     }
     return "";
 }
 
-function extractHistory(body: Record<string, unknown>): ChatMessage[] {
-    if (Array.isArray(body.messages) && body.messages.length > 1) {
-        return (body.messages as UIMsg[]).slice(0, -1)
+function extractMessages(body: Record<string, unknown>): ChatMessage[] {
+    // Primary: new panel format — full messages array
+    if (Array.isArray(body.messages) && body.messages.length > 0) {
+        return (body.messages as RawMsg[])
             .filter(m => m.role === "user" || m.role === "assistant")
-            .map(m => {
-                const role = m.role as "user" | "assistant";
-                if (Array.isArray(m.parts)) {
-                    const content = m.parts.filter((p): p is { type: "text"; text: string } =>
-                        p.type === "text" && typeof p.text === "string").map(p => p.text).join("");
-                    return { role, content };
-                }
-                return { role, content: typeof m.content === "string" ? m.content : "" };
-            }).filter(m => m.content.trim() !== "");
+            .map(m => ({ role: m.role as "user" | "assistant", content: parseContent(m) }))
+            .filter(m => m.content !== "");
     }
-    if (Array.isArray(body.history)) {
-        return (body.history as Array<{ role: string; content: string }>)
-            .filter(m => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
-            .map(m => ({ role: m.role as "user" | "assistant", content: m.content }));
+    // Fallback: legacy { message, history } format (room chat, etc.)
+    if (typeof body.message === "string" && body.message.trim()) {
+        const history = Array.isArray(body.history)
+            ? (body.history as RawMsg[])
+                .filter(m => m.role === "user" || m.role === "assistant")
+                .map(m => ({ role: m.role as "user" | "assistant", content: parseContent(m) }))
+                .filter(m => m.content !== "")
+            : [];
+        return [...history, { role: "user" as const, content: body.message.trim() }];
     }
     return [];
 }
@@ -90,6 +83,8 @@ function extractModelId(body: Record<string, unknown>): ModelId {
     return DEFAULT_MODEL_ID;
 }
 
+// ── Route handler ──────────────────────────────────────────────────────────
+
 export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ name: string }> }
@@ -98,32 +93,33 @@ export async function POST(
     const agentName = name.toLowerCase() as AgentName;
 
     if (!AGENT_CONFIG[agentName]) {
-        return new Response(JSON.stringify({ error: `Unknown agent: ${name}` }),
-            { status: 404, headers: { "Content-Type": "application/json" } });
+        return Response.json({ error: `Unknown agent: ${name}` }, { status: 404 });
     }
 
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
-        return new Response(JSON.stringify({ error: "Unauthorized" }),
-            { status: 401, headers: { "Content-Type": "application/json" } });
+        return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
     const userId = session.user.id;
 
     let body: Record<string, unknown>;
     try { body = await req.json(); }
     catch {
-        return new Response(JSON.stringify({ error: "Invalid JSON body" }),
-            { status: 400, headers: { "Content-Type": "application/json" } });
+        return Response.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
-    const message = extractMessage(body);
-    if (!message) {
-        return new Response(JSON.stringify({ error: "message is required" }),
-            { status: 400, headers: { "Content-Type": "application/json" } });
+    const messages = extractMessages(body);
+    if (messages.length === 0 || messages[messages.length - 1].role !== "user") {
+        return Response.json({ error: "messages must end with a user turn" }, { status: 400 });
     }
 
+    // Rate limit
     if (redis) {
-        const rl = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, "1 m"), prefix: `rl:agent:${agentName}` });
+        const rl = new Ratelimit({
+            redis,
+            limiter: Ratelimit.slidingWindow(20, "1 m"),
+            prefix: `rl:agent:${agentName}`,
+        });
         const { success, limit, remaining, reset } = await rl.limit(userId);
         if (!success) {
             return new Response(JSON.stringify({ error: "Rate limit exceeded. Try again in a moment." }), {
@@ -140,57 +136,60 @@ export async function POST(
 
     const config  = AGENT_CONFIG[agentName];
     const ttl     = CACHE_TTL[agentName];
-    const history = extractHistory(body);
     const modelId = extractModelId(body);
 
-    if (redis && ttl > 0 && history.length === 0) {
-        const key    = cacheKey(agentName, message, modelId);
+    // The last user message (for cache key + logging)
+    const lastUserMsg = [...messages].reverse().find(m => m.role === "user")!.content;
+    const isFirstTurn = messages.filter(m => m.role === "user").length === 1;
+
+    // Cache read (researchbot, first turn only)
+    if (redis && ttl > 0 && isFirstTurn) {
+        const key    = cacheKey(agentName, lastUserMsg, modelId);
         const cached = await redis.get<string>(key);
         if (cached) {
-            logAgent(userId, agentName, message).catch(console.error);
-            return new Response(JSON.stringify({ text: cached, cached: true, webSearch: false }),
-                { headers: { "Content-Type": "application/json" } });
+            logAgent(userId, agentName, lastUserMsg).catch(console.error);
+            return Response.json({ text: cached, cached: true, webSearch: false });
         }
     }
 
-    // ResearchBot (non-streaming)
+    // ── ResearchBot (non-streaming) ──────────────────────────────────────
     if (!config.stream) {
         try {
-            let prompt    = config.prompt;
-            let webSearch = false;
+            let systemPrompt = config.prompt;
+            let webSearch    = false;
+
             if (process.env.TAVILY_API_KEY) {
                 try {
                     const { tavilySearch, formatSearchContext } = await import("@/lib/agents/travily");
-                    const results = await tavilySearch(message);
-                    if (results && results.results.length > 0) {
-                        prompt    = `${config.prompt}\n\n${formatSearchContext(message, results)}`;
-                        webSearch = true;
+                    const results = await tavilySearch(lastUserMsg);
+                    if (results && Array.isArray(results.results) && results.results.length > 0) {
+                        systemPrompt = `${config.prompt}\n\n${formatSearchContext(lastUserMsg, results)}`;
+                        webSearch    = true;
                     }
                 } catch (e) { console.warn("[agents] Tavily failed:", e); }
             }
-            const text = await routeFull(prompt, message, history, modelId);
-            if (redis && ttl > 0 && history.length === 0) {
-                await redis.set(cacheKey(agentName, message, modelId), text, { ex: ttl });
+
+            const text = await routeFull(systemPrompt, messages, modelId);
+
+            if (redis && ttl > 0 && isFirstTurn) {
+                await redis.set(cacheKey(agentName, lastUserMsg, modelId), text, { ex: ttl });
             }
-            logAgent(userId, agentName, message).catch(console.error);
-            return new Response(JSON.stringify({ text, webSearch }),
-                { headers: { "Content-Type": "application/json" } });
+            logAgent(userId, agentName, lastUserMsg).catch(console.error);
+            return Response.json({ text, webSearch });
         } catch (err) {
             console.error(`[agents/${agentName}] Error:`, err);
-            return new Response(JSON.stringify({ error: "LLM request failed. Check your API keys." }),
-                { status: 502, headers: { "Content-Type": "application/json" } });
+            return Response.json({ error: "LLM request failed. Check your API keys." }, { status: 502 });
         }
     }
 
-    // Streaming
+    // ── Streaming ────────────────────────────────────────────────────────
     try {
-        const response = await routeStream(config.prompt, message, history, modelId);
-        logAgent(userId, agentName, message).catch(console.error);
+        const response = await routeStream(config.prompt, messages, modelId);
+        logAgent(userId, agentName, lastUserMsg).catch(console.error);
         return response;
     } catch (err) {
         console.error(`[agents/${agentName}] Stream error:`, err);
-        return new Response(JSON.stringify({ error: "LLM request failed. Check your API keys." }),
-            { status: 502, headers: { "Content-Type": "application/json" } });
+        return Response.json({ error: "LLM request failed. Check your API keys." }, { status: 502 });
     }
 }
 

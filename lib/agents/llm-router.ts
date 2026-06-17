@@ -4,7 +4,6 @@ import { createMistral } from "@ai-sdk/mistral";
 import { streamText, generateText, LanguageModel } from "ai";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
-
 export type ModelProvider = "groq" | "gemini" | "mistral";
 
 export type ModelId =
@@ -98,10 +97,6 @@ export const ALL_MODELS: ModelOption[] = [
 
 export const DEFAULT_MODEL_ID: ModelId = "groq/openai/gpt-oss-120b";
 
-// ── Fallback chain ─────────────────────────────────────────────────────────
-// Order: GPT-OSS 120B → Llama 3.3 70B → Gemini Flash → Mistral Large
-// All three provider keys are available, so all four slots are active.
-
 const FALLBACK_CHAIN: ModelId[] = [
     "groq/openai/gpt-oss-120b",
     "mistral/mistral-large-latest",
@@ -109,7 +104,7 @@ const FALLBACK_CHAIN: ModelId[] = [
     "groq/llama-3.3-70b-versatile",
 ];
 
-// ── Model resolver ─────────────────────────────────────────────────────────
+
 
 function resolveModel(modelId: ModelId): LanguageModel {
     const [provider, ...rest] = modelId.split("/");
@@ -133,13 +128,8 @@ function resolveModel(modelId: ModelId): LanguageModel {
     }
 }
 
-// Build ordered model list: preferred first, then fallbacks (no duplicates)
 function buildModelList(preferredId: ModelId): LanguageModel[] {
-    const order = [
-        preferredId,
-        ...FALLBACK_CHAIN.filter(id => id !== preferredId),
-    ];
-
+    const order = [preferredId, ...FALLBACK_CHAIN.filter(id => id !== preferredId)];
     const models: LanguageModel[] = [];
     for (const id of order) {
         try { models.push(resolveModel(id)); } catch { /* key not set — skip */ }
@@ -147,22 +137,15 @@ function buildModelList(preferredId: ModelId): LanguageModel[] {
     return models;
 }
 
-// ── routeFull — generateText with working fallback ─────────────────────────
-// generateText awaits the full response, so quota/auth errors throw
-// synchronously and the catch block can try the next model.
+
 
 export async function routeFull(
     systemPrompt: string,
-    userMessage: string,
-    history: ChatMessage[] = [],
+    messages: ChatMessage[],
     modelId: ModelId = DEFAULT_MODEL_ID
 ): Promise<string> {
-    const messages: ChatMessage[] = [...history, { role: "user", content: userMessage }];
     const models = buildModelList(modelId);
-
-    if (models.length === 0) {
-        throw new Error("No LLM provider configured. Add at least one API key.");
-    }
+    if (models.length === 0) throw new Error("No LLM provider configured.");
 
     let lastError: unknown;
     for (const model of models) {
@@ -176,21 +159,19 @@ export async function routeFull(
             return result.text;
         } catch (err) {
             lastError = err;
-            continue; // try next model
         }
     }
     throw lastError;
 }
 
+
+
 export async function routeStream(
     systemPrompt: string,
-    userMessage: string,
-    history: ChatMessage[] = [],
+    messages: ChatMessage[],
     modelId: ModelId = DEFAULT_MODEL_ID
 ): Promise<Response> {
-    const messages: ChatMessage[] = [...history, { role: "user", content: userMessage }];
     const models = buildModelList(modelId);
-
     if (models.length === 0) {
         return Response.json(
             { error: "No LLM provider configured. Add at least one API key." },
@@ -200,15 +181,6 @@ export async function routeStream(
 
     for (const model of models) {
         try {
-            // Probe: verify the model responds before committing to a stream.
-            await generateText({
-                model,
-                system: "Reply with one word: ok",
-                messages: [{ role: "user", content: "ok" }],
-                maxOutputTokens: 5,
-            });
-
-            // Probe passed — stream with the same model.
             const result = streamText({
                 model,
                 system: systemPrompt,
@@ -217,7 +189,7 @@ export async function routeStream(
             });
             return result.toUIMessageStreamResponse();
         } catch {
-            continue; // probe failed — try next model
+            continue; 
         }
     }
 
